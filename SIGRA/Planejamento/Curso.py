@@ -24,26 +24,11 @@ def CUREGEP(in_files, encoding='utf-16'):
     encoding -- a codificação do arquivo de entrada.
                (default utf-16)
     '''
-    def get_values(line, mas_end_index, fem_end_index):
-        k = line[22:71].strip()
-        mas = line[mas_end_index - 10:mas_end_index].strip()
-        fem = line[fem_end_index - 10:fem_end_index].strip()
-        return k, {'Mas': int(mas) if mas else 0,
-                   'Fem': int(fem) if fem else 0}
-
-    def get_data(lines, mas_end_index, fem_end_index):
-        d = {}
-        for line in lines[14:42]:
-            k, v = get_values(line, mas_end_index, fem_end_index)
-            d[k] = v
-
-        return d
-
     def lista_periodos(line):
         REGEX = r'^ +(\d{4}/\d) +(\d{4}/\d) +(\d{4}/\d) +(\d{4}/\d)$'
         return re.search(REGEX, line)
 
-    def get_periodos(line):
+    def parse_periodos(line):
         return [p for p in lista_periodos(line).groups()]
 
     def lista_estatistica(line):
@@ -51,7 +36,7 @@ def CUREGEP(in_files, encoding='utf-16'):
                 ' +(\d+) +(\d+) +(\d+) +(\d+)$'
         return re.search(REGEX, line)
 
-    def get_estatistica(line):
+    def parse_estatistica(line):
         return [e for e in lista_estatistica(line).groups()]
 
     stats = {}
@@ -65,14 +50,14 @@ def CUREGEP(in_files, encoding='utf-16'):
         while not lista_periodos(content[i]):
             i += 1
 
-        periodos = get_periodos(content[i])
+        periodos = parse_periodos(content[i])
         for p in periodos:
             stats[p] = {}
 
         while not lista_estatistica(content[i]):
             i += 1
         while lista_estatistica(content[i]):
-            stat = get_estatistica(content[i])
+            stat = parse_estatistica(content[i])
 
             s = 1
             for p in periodos:
