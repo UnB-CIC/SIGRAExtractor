@@ -10,12 +10,12 @@ import re
 from SIGRA import utils
 
 
-def OFELST(in_file, encoding='utf-16'):
+def OFELST(arquivo, encoding='utf-16'):
     '''Retorna um dicionário com as informações de cada disciplina
     ofertada, extraindo as informações do arquivo de entrada.
 
     Argumentos:
-    in_file -- caminho para o arquivo contendo os dados, que deve ser o
+    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
     encoding -- a codificação do arquivo de entrada.
@@ -46,7 +46,8 @@ def OFELST(in_file, encoding='utf-16'):
         return re.search(r'^.{10,14} -  \w+', line)
 
     def eh_nova_turma(line):
-        return re.search(r'^  [A-Z]{1,2} *?\w+', line)
+        REGEX = r'^  ([A-Z]{1,2}) .*?(\d+) +(Diurno|Noturno|Ambos)'
+        return re.search(REGEX, line)
 
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
@@ -62,38 +63,76 @@ def OFELST(in_file, encoding='utf-16'):
         m = re.search(r'(\w{3}-\d{6}  .*$)', line)
         return m.group(0) if m else ''
 
-    def parse_turma(line):
-        t = line[:7].strip()
-        descricao = line[7:36].strip()
-        vagas = line[36:41].strip()
-        turno = line[41:54].strip()
-        dia = line[54:62].strip()
-        horario = line[62:74].strip()
-        local = line[74:115].strip()
-        aula = {dia: {'horário': horario, 'local': local}}
-        if len(line) < 160:
-            professor = utils.capitalize(line[115:].strip())
-            reserva = ''
-            obs = ''
+    def parse_Prof_Reserva_Obs(line):
+        if '  ' in line:
+            i = line.index('  ')
+            professor = line[:i]
+            line = line[i:].strip()
         else:
-            professor = utils.capitalize(line[115:160].strip())
-            if len(line) < 224:
-                reserva = line[160:].strip()
-                obs = ''
-            else:
-                reserva = line[160:224].strip()
-                obs = line[224:].strip()
-        return (t, descricao, vagas, turno, aula, professor, reserva,
-                obs)
+            professor = line.strip()
 
-        # (.*?) + -  (.*?)[\s\S] .*?-+ Disciplinas do Departamento[\s\S](.*?)
-    content = clean_file_content(in_file, encoding)
-    for line in content:
-        print(line)
-    exit(1)
+        m = re.search(r'(\w.*?)/(\d+)[ \s\S]', professor)
+        if m:
+            professor = ''
+            reserva = {m.group(1): int(m.group(2))}
+        else:
+            m = re.search(r'(\w.*?)/(\d+)[ \s\S]', line)
+            reserva = {m.group(1): int(m.group(2))} if m else {}
 
-    print('Leitura dos dados de {}.'.format(in_file))
-    content = clean_file_content(in_file, encoding)
+        m = re.search(r'(\*+)[ \s\S]', line)
+        obs = m.group(1) if m else ''
+        return professor, reserva, obs
+
+    def parse_turma(line):
+        TURNO = r'(Diurno|Noturno|Ambos)'
+        DIA = r'(Segunda|Terça|Quarta|Quinta|Sexta|Sábado|Domingo)'
+        HORARIO = r'(\d\d:\d\d \d\d:\d\d)'
+        REGEX = r'^ +([A-Z]{1,3}) (.*?) (\d+) +' + TURNO + ' +' \
+                '' + DIA + ' +' + HORARIO + ' (.*?)  +(.*)'
+
+        m = re.search(REGEX, line)
+        if m:  # nova turma
+            t = m.group(1)
+            descricao = m.group(2).strip()
+            vagas = int(m.group(3))
+            turno = m.group(4)
+            dia = m.group(5)
+            horario = m.group(6)
+            local = m.group(7)
+            restante = m.group(8).strip()
+
+            professor, reserva, obs = parse_Prof_Reserva_Obs(restante)
+        else:
+            t = ''
+            vagas = ''
+            turno = ''
+
+            m = re.search(r'(.*)' + DIA + ' +' + HORARIO + ' (.*)', line)
+            if m:  # tem dia
+                descricao = m.group(1).strip()
+                dia = m.group(2)
+                horario = m.group(3)
+                restante = m.group(4).strip()
+
+                if '  ' in restante:
+                    i = restante.index('  ')
+                    local = restante[:i]
+                    restante = restante[i:].strip()
+                    professor, reserva, obs = parse_Prof_Reserva_Obs(restante)
+                else:
+                    local = restante
+                    professor, reserva, obs = '', '', ''
+
+            else:  # nao tem dia
+                descricao = line[7:36].strip()
+                dia, horario, local = '', '', ''
+                professor, reserva, obs = parse_Prof_Reserva_Obs(line)
+
+        aula = {dia: {'horário': horario, 'local': local}}
+        return (t, descricao, vagas, turno, aula, professor, reserva, obs)
+
+    print('Leitura dos dados de {}.'.format(arquivo))
+    content = clean_file_content(arquivo, encoding)
 
     oferta = {}
 
@@ -103,7 +142,8 @@ def OFELST(in_file, encoding='utf-16'):
     while i < num_lines:
         if eh_disciplina(content[i]):
             codigo, nome = parse_disciplina(content[i])
-            oferta[codigo] = {'nome': nome}
+            if codigo not in oferta:
+                oferta[codigo] = {'nome': nome}
 
             # ### Pré-requisitos ###
             i += 1
@@ -125,10 +165,7 @@ def OFELST(in_file, encoding='utf-16'):
             turmas = {}
 
             i += 1
-            while i < num_lines:
-                if not eh_nova_turma(content[i]):
-                    break
-
+            while i < num_lines and eh_nova_turma(content[i]):
                 (t, descricao, vagas, turno,
                  aula, professor, reserva, obs) = parse_turma(content[i])
                 turmas[t] = {'descrição': descricao, 'vagas': vagas,
@@ -137,8 +174,8 @@ def OFELST(in_file, encoding='utf-16'):
                              'reserva': reserva, 'observação': obs}
 
                 i += 1
-                while i < num_lines:
-                    if eh_nova_turma(content[i]) or eh_disciplina(content[i]):
+                while i < num_lines and not eh_nova_turma(content[i]):
+                    if eh_disciplina(content[i]):
                         break
 
                     (_, descricao, vagas, turno,
@@ -147,18 +184,33 @@ def OFELST(in_file, encoding='utf-16'):
                     if descricao:
                         turmas[t]['descrição'] += ' ' + descricao
                     if aula:
-                        turmas[t]['aulas'].update(aula)
+                        has_data = False
+                        for dia, detalhes in aula.items():
+                            if (detalhes['local'] or detalhes['horário']):
+                                has_data = True
+                                break
+                        if has_data:
+                            turmas[t]['aulas'].update(aula)
                     if professor:
                         turmas[t]['professores'] += ', ' + professor
                     if reserva:
-                        turmas[t]['reserva'] += ' ' + reserva
+                        turmas[t]['reserva'].update(reserva)
                     if obs:
                         turmas[t]['observação'] += ' ' + obs
 
                     i += 1
 
-            oferta[codigo]['turmas'] = turmas
+            if 'turmas' not in oferta[codigo]:
+                oferta[codigo]['turmas'] = turmas
+            else:
+                oferta[codigo]['turmas'].update(turmas)
             # ### Turmas ###
 
-    print('{} disciplinas.'.format(len(oferta)))
+        if i < num_lines and not eh_disciplina(content[i]):
+            i += 1
+
+    num_disciplinas = len(oferta)
+    num_turmas = sum(len(oferta[codigo]['turmas']) for codigo in oferta)
+    print('{} disciplinas, {} turmas'.format(num_disciplinas, num_turmas))
+
     return oferta
