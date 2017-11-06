@@ -57,7 +57,7 @@ def OFELST(arquivo, encoding='utf-16'):
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
-        return codigo.strip(), nome.strip()
+        return codigo.strip(), utils.capitalize(nome.strip())
 
     def parse_pre_requisitos(line):
         m = re.search(r'(\w{3}-\d{6}  .*$)', line)
@@ -73,11 +73,24 @@ def OFELST(arquivo, encoding='utf-16'):
 
         m = re.search(r'(\w.*?)/(\d+)[ \s\S]', professor)
         if m:
-            professor = ''
-            reserva = {m.group(1): int(m.group(2))}
+            if '   ' in m.group(1):
+                split = m.group(1).split('   ')
+                professor = split[0]
+                for x in range(1, len(split)):
+                    m = re.search(r'(\w.*?)/(\d+)[ \s\S]', split[x])
+                    if m:
+                        reserva = {m.group(1): int(m.group(2))}
+                        break
+            else:
+                professor = ''
+                reserva = {m.group(1): int(m.group(2))}
         else:
             m = re.search(r'(\w.*?)/(\d+)[ \s\S]', line)
-            reserva = {m.group(1): int(m.group(2))} if m else {}
+            if m:
+                reserva = {m.group(1).split('   ')[-1]: int(m.group(2))}
+            else:
+                reserva = {}
+            # reserva = {m.group(1): int(m.group(2))} if m else {}
 
         m = re.search(r'(\*+)[ \s\S]', line)
         obs = m.group(1) if m else ''
@@ -87,19 +100,37 @@ def OFELST(arquivo, encoding='utf-16'):
         TURNO = r'(Diurno|Noturno|Ambos)'
         DIA = r'(Segunda|Terça|Quarta|Quinta|Sexta|Sábado|Domingo)'
         HORARIO = r'(\d\d:\d\d \d\d:\d\d)'
-        REGEX = r'^ +([A-Z]{1,3}) (.*?) (\d+) +' + TURNO + ' +' \
-                '' + DIA + ' +' + HORARIO + ' (.*?)  +(.*)'
+        # REGEX = r'^ +([A-Z]{1,3}) (.*?) (\d+) +' + TURNO + ' +' \
+        #         '' + DIA + ' +' + HORARIO + ' (.*?)  +(.*)'
+        REGEX = r'^ +([A-Z]{1,3}) (.*?) (\d+) +' + TURNO + '(.*)'
 
         m = re.search(REGEX, line)
         if m:  # nova turma
+            # t = m.group(1)
+            # descricao = m.group(2).strip()
+            # vagas = int(m.group(3))
+            # turno = m.group(4)
+            # dia = m.group(5)
+            # horario = m.group(6)
+            # local = m.group(7)
+            # restante = m.group(8).strip()
+
+            # professor, reserva, obs = parse_Prof_Reserva_Obs(restante)
+
             t = m.group(1)
             descricao = m.group(2).strip()
             vagas = int(m.group(3))
             turno = m.group(4)
-            dia = m.group(5)
-            horario = m.group(6)
-            local = m.group(7)
-            restante = m.group(8).strip()
+            restante = m.group(5).strip()
+
+            m = re.search(DIA + ' +' + HORARIO + ' (.*?)  +(.*)', restante)
+            if m:
+                dia = m.group(1)
+                horario = m.group(2)
+                local = m.group(3)
+                restante = m.group(4)
+            else:
+                dia, horario, local = '', '', ''
 
             professor, reserva, obs = parse_Prof_Reserva_Obs(restante)
         else:
@@ -114,7 +145,7 @@ def OFELST(arquivo, encoding='utf-16'):
                 horario = m.group(3)
                 restante = m.group(4).strip()
 
-                if '  ' in restante:
+                if '  ' in restante:  # tem professor ou reserva ou obs
                     i = restante.index('  ')
                     local = restante[:i]
                     restante = restante[i:].strip()
@@ -123,12 +154,12 @@ def OFELST(arquivo, encoding='utf-16'):
                     local = restante
                     professor, reserva, obs = '', '', ''
 
-            else:  # nao tem dia
+            else:
                 descricao = line[7:36].strip()
                 dia, horario, local = '', '', ''
                 professor, reserva, obs = parse_Prof_Reserva_Obs(line)
 
-        aula = {dia: {'horário': horario, 'local': local}}
+        aula = {dia: {'horário': horario, 'local': local}} if dia else {}
         return (t, descricao, vagas, turno, aula, professor, reserva, obs)
 
     print('Leitura dos dados de {}.'.format(arquivo))
@@ -169,7 +200,7 @@ def OFELST(arquivo, encoding='utf-16'):
                 (t, descricao, vagas, turno,
                  aula, professor, reserva, obs) = parse_turma(content[i])
                 turmas[t] = {'descrição': descricao, 'vagas': vagas,
-                             'turno': turno, 'aulas': aula,
+                             'turno': turno, 'aulas': [aula],
                              'professores': professor,
                              'reserva': reserva, 'observação': obs}
 
@@ -184,13 +215,7 @@ def OFELST(arquivo, encoding='utf-16'):
                     if descricao:
                         turmas[t]['descrição'] += ' ' + descricao
                     if aula:
-                        has_data = False
-                        for dia, detalhes in aula.items():
-                            if (detalhes['local'] or detalhes['horário']):
-                                has_data = True
-                                break
-                        if has_data:
-                            turmas[t]['aulas'].update(aula)
+                        turmas[t]['aulas'].append(aula)
                     if professor:
                         turmas[t]['professores'] += ', ' + professor
                     if reserva:

@@ -161,9 +161,10 @@ def oferta_obrigatorias(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
                 for t in turmas:
                     turma = oferta[codigo]['turmas'][t]
                     for dia in DIAS:
-                        if dia in turma['aulas']:
-                            hora = turma['aulas'][dia]['horário']
-                            print('\t\t', t, dia, hora)
+                        for aula in turma['aulas']:
+                            if dia in aula:
+                                hora = aula[dia]['horário']
+                                print('\t\t', t, dia, hora)
                 if mostra_opcoes:
                     if habilitacao:
                         print('\tOutros')
@@ -185,6 +186,6 @@ if __name__ == '__main__':
 
     # pretty_fluxo('relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16')
 
-    oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat', mostra_opcoes=True)
+    oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat')
 
     pass
