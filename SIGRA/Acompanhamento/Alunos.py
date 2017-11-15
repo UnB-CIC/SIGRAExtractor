@@ -1,5 +1,5 @@
 #  -*- coding: utf-8 -*-
-#    @package: acompanhamento.py
+#    @package: Alunos.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções de extração de informações de relatórios de Acompanhamento do Sistema
@@ -8,20 +8,42 @@
 import re
 
 
-def ALUTEL(in_file, encoding='ISO-8859-1'):
+def ALUREL(arquivo, encoding='utf-16'):
+    print('Leitura dos dados de {}.'.format(arquivo))
+
+    relacao = {}
+    with open(arquivo, encoding=encoding) as f:
+        content = f.read()
+
+    print('Extração de dados.')
+    num_registros = 0
+    REGEX = r'(\d\d/\d{3,}) +(.*?) {2,}(\d+/\d+) {2,}(\w+) +(\d+) +(.*)[\s\S]'
+    for matricula, nome, periodo, forma_de_ingresso, codigo_opcao, nome_opcao in re.findall(REGEX, content):
+        if codigo_opcao not in relacao:
+            relacao[codigo_opcao] = {'Opção': nome_opcao, 'Alunos': {}}
+        if periodo not in relacao[codigo_opcao]['Alunos']:
+            relacao[codigo_opcao]['Alunos'][periodo] = {}
+        relacao[codigo_opcao]['Alunos'][periodo][matricula] = {'Nome': nome, 'Ingresso': forma_de_ingresso}
+        num_registros += 1
+
+    print('{} registros.'.format(num_registros))
+    return relacao
+
+
+def ALUTEL(arquivo, encoding='utf-16'):
     '''Extrai o nome completo, telefone de contato e o e-mail registrados
     para cada aluno(a) listado(a) no arquivo de entrada.
 
     Argumentos:
-    in_file -- caminho para o arquivo contendo os dados, que deve ser o
+    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Acompanhamento > Alunos > ALUTEL
     encoding -- a codificação do arquivo de entrada.
                (default utf-16)
     '''
-    print('Leitura dos dados de {}.'.format(in_file))
+    print('Leitura dos dados de {}.'.format(arquivo))
     relacao = {}
-    with open(in_file, encoding=encoding) as f:
+    with open(arquivo, encoding=encoding) as f:
         content = f.read()
 
     print('Extração de dados.')
