@@ -7,6 +7,7 @@
 
 
 import re
+
 from SIGRA import utils
 
 
@@ -21,14 +22,14 @@ def FLULST(arquivo, encoding='utf-16'):
     encoding -- a codificação do arquivo de entrada.
                (default utf-16)
     '''
-    def clean_file_content(file_name, encoding):
+    def clean_file_content(arquivo, encoding):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
                  'Listagem de Fluxo de Curso - Dados Completos.*[\s\S]*?'
         FOOTER = r'^ + -{5,}[\s\S]+?lstflulst[\s\S]'
 
-        with open(file_name, encoding=encoding) as f:
-            content = re.sub(HEADER, '', f.read())
-            content = re.sub(FOOTER, '', content)
+        content = utils.load(arquivo, encoding)
+        content = re.sub(HEADER, '', content)
+        content = re.sub(FOOTER, '', content)
 
         return [line for line in content.split('\n') if line]
 

@@ -7,13 +7,13 @@
 
 import re
 
+from SIGRA import utils
+
 
 def ALUREL(arquivo, encoding='utf-16'):
-    print('Leitura dos dados de {}.'.format(arquivo))
+    content = utils.load(arquivo, encoding)
 
     relacao = {}
-    with open(arquivo, encoding=encoding) as f:
-        content = f.read()
 
     print('Extração de dados.')
     num_registros = 0
@@ -41,11 +41,9 @@ def ALUTEL(arquivo, encoding='utf-16'):
     encoding -- a codificação do arquivo de entrada.
                (default utf-16)
     '''
-    print('Leitura dos dados de {}.'.format(arquivo))
-    relacao = {}
-    with open(arquivo, encoding=encoding) as f:
-        content = f.read()
+    content = utils.load(arquivo, encoding)
 
+    relacao = {}
     print('Extração de dados.')
     REGEX = r'(\d\d/\d{5,})[ ]+(\w.*)\n[ ]+(\w.*@.*)'
     for matricula, nome_e_tel, email in re.findall(REGEX, content):

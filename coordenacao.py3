@@ -328,7 +328,7 @@ def turmas_ofertadas(professores, arquivo, encoding='utf-16'):
 
 
 if __name__ == '__main__':
-    # arquivo_de_emails(arquivo='relatorios/Acompanhamento/Alunos/ALUTEL/2017-2.txt')
+    # arquivo_de_emails(arquivo='relatorios/Acompanhamento/Alunos/ALUTEL/2017-2.txt', encoding='ISO-8859-1')
 
     # csv_com_entrada_saida_de_alunos('relatorios/Planejamento/Curso/CUREGEP/' + f for f in ['1997.txt', '1998.txt', '2000.txt', '2002.txt', '2004.txt', '2006.txt', '2008.txt', '2010.txt', '2012.txt', '2014.txt', '2016.txt'])
 
@@ -339,8 +339,8 @@ if __name__ == '__main__':
     # oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat')
     # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat')
 
-    lista = alunos_matriculados_por_semestre('relatorios/Acompanhamento/Alunos/ALUREL/949.txt', 'utf-16',
-                                             'relatorios/Acompanhamento/HistoricoEscolar/HEDIS/118044_2017-2.txt', 'utf-16')
-    print(media_de_alunos_matriculados_por_semestre(lista, True, '2014/2 <= {} <= 2017/2'))
+    # lista = alunos_matriculados_por_semestre('relatorios/Acompanhamento/Alunos/ALUREL/949.txt', 'utf-16',
+    #                                          'relatorios/Acompanhamento/HistoricoEscolar/HEDIS/118044_2017-2.txt', 'utf-16')
+    # print(media_de_alunos_matriculados_por_semestre(lista, True, '2014/2 <= {} <= 2017/2'))
 
     pass

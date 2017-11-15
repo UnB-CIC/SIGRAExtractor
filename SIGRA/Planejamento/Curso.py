@@ -8,6 +8,8 @@
 
 import re
 
+from SIGRA import utils
+
 
 def CUREST(in_files, encoding='utf-16'):
     raise NotImplementedError
@@ -40,11 +42,8 @@ def CUREGEP(in_files, encoding='utf-16'):
         return [e for e in lista_estatistica(line).groups()]
 
     stats = {}
-    for in_file in in_files:
-        print('Leitura dos dados de {}.'.format(in_file))
-
-        with open(in_file, encoding=encoding) as f:
-            content = f.readlines()
+    for arquivo in in_files:
+        content = utils.load(arquivo, encoding).split('\n')
 
         i = 0
         while not lista_periodos(content[i]):

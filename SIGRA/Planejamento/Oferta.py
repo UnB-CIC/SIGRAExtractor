@@ -31,14 +31,14 @@ def OFELST(arquivo, encoding='utf-16'):
     Programação' ou ter sido aprovado em ambas as disciplinas
     'Aprendizagem e Ensino' e 'Didática Fundamental'.
     '''
-    def clean_file_content(file_name, encoding):
+    def clean_file_content(arquivo, encoding):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
                  'Período :.*\d{4}/\d.*[\s\S]'
         FOOTER = r' Observações :[.*|\s\S]+?lstofelst'
 
-        with open(file_name, encoding=encoding) as f:
-            content = re.sub(HEADER, '', f.read())
-            content = re.sub(FOOTER, '', content)
+        content = utils.load(arquivo, encoding)
+        content = re.sub(HEADER, '', content)
+        content = re.sub(FOOTER, '', content)
 
         return [line for line in content.split('\n') if line]
 
