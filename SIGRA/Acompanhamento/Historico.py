@@ -10,17 +10,15 @@ import re
 from SIGRA import utils
 
 
-def HEDIS(arquivo, encoding='utf-16'):
+def HEDIS(arquivo):
     '''Extrai as informações dos alunos matriculados em uma disciplina.
 
     Argumentos:
     arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Acompanhamento > Histórico Escolar > HEDIS
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     '''
-    content = utils.load(arquivo, encoding)
+    content = utils.load(arquivo)
 
     print('Extração de dados.')
     num_registros = 0

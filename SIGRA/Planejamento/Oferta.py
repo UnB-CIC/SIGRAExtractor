@@ -10,7 +10,7 @@ import re
 from SIGRA import utils
 
 
-def OFELST(arquivo, encoding='utf-16'):
+def OFELST(arquivo):
     '''Retorna um dicionário com as informações de cada disciplina
     ofertada, extraindo as informações do arquivo de entrada.
 
@@ -18,8 +18,6 @@ def OFELST(arquivo, encoding='utf-16'):
     arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
 
     No caso de pré-requisitos, o resultado é uma lista em que cada item
     tem uma relação 'OU' com os demais, e cada item é uma lista cujos
@@ -31,12 +29,12 @@ def OFELST(arquivo, encoding='utf-16'):
     Programação' ou ter sido aprovado em ambas as disciplinas
     'Aprendizagem e Ensino' e 'Didática Fundamental'.
     '''
-    def clean_file_content(arquivo, encoding):
+    def clean_file_content(arquivo):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
                  'Período :.*\d{4}/\d.*[\s\S]'
         FOOTER = r' Observações :[.*|\s\S]+?lstofelst'
 
-        content = utils.load(arquivo, encoding)
+        content = utils.load(arquivo)
         content = re.sub(HEADER, '', content)
         content = re.sub(FOOTER, '', content)
 
@@ -151,7 +149,7 @@ def OFELST(arquivo, encoding='utf-16'):
         aula = {dia: {'horário': horario, 'local': local}} if dia else {}
         return (t, descricao, vagas, turno, aula, professor, reserva, obs)
 
-    content = clean_file_content(arquivo, encoding)
+    content = clean_file_content(arquivo)
 
     oferta = {}
 

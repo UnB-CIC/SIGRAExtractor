@@ -11,7 +11,7 @@ import re
 from SIGRA import utils
 
 
-def FLULST(arquivo, encoding='utf-16'):
+def FLULST(arquivo):
     '''Retorna um dicionário com as informações das disciplinas listadas no
     fluxo em cada período, extraindo as informações do arquivo de entrada.
 
@@ -19,15 +19,13 @@ def FLULST(arquivo, encoding='utf-16'):
     arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Planejamento > Fluxo > FLULST
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     '''
-    def clean_file_content(arquivo, encoding):
+    def clean_file_content(arquivo):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
                  'Listagem de Fluxo de Curso - Dados Completos.*[\s\S]*?'
         FOOTER = r'^ + -{5,}[\s\S]+?lstflulst[\s\S]'
 
-        content = utils.load(arquivo, encoding)
+        content = utils.load(arquivo)
         content = re.sub(HEADER, '', content)
         content = re.sub(FOOTER, '', content)
 
@@ -59,7 +57,7 @@ def FLULST(arquivo, encoding='utf-16'):
         m = eh_tipo(line)
         return m.group(1)
 
-    content = clean_file_content(arquivo, encoding)
+    content = clean_file_content(arquivo)
 
     fluxo = {}
     i = 1

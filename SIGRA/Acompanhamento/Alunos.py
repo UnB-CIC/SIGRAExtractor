@@ -10,27 +10,37 @@ import re
 from SIGRA import utils
 
 
-def ALUREL(arquivo, encoding='utf-16'):
-    content = utils.load(arquivo, encoding)
+def ALUREL(arquivo):
+    '''Retorna um dicionário com as informações de cada aluno listado no
+    arquivo com a relação de alunos.
+
+    Argumentos:
+    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
+               relatório exportado via:
+               SIGRA > Acompanhamento > Alunos > ALUTEL
+    '''
+    content = utils.load(arquivo)
 
     relacao = {}
 
     print('Extração de dados.')
     num_registros = 0
     REGEX = r'(\d\d/\d{3,}) +(.*?) {2,}(\d+/\d+) {2,}(\w+) +(\d+) +(.*)[\s\S]'
-    for matricula, nome, periodo, forma_de_ingresso, codigo_opcao, nome_opcao in re.findall(REGEX, content):
-        if codigo_opcao not in relacao:
-            relacao[codigo_opcao] = {'Opção': nome_opcao, 'Alunos': {}}
-        if periodo not in relacao[codigo_opcao]['Alunos']:
-            relacao[codigo_opcao]['Alunos'][periodo] = {}
-        relacao[codigo_opcao]['Alunos'][periodo][matricula] = {'Nome': nome, 'Ingresso': forma_de_ingresso}
+    for (matricula, nome, periodo,
+         ingresso, codigo, opcao) in re.findall(REGEX, content):
+        if codigo not in relacao:
+            relacao[codigo] = {'Opção': opcao, 'Alunos': {}}
+        if periodo not in relacao[codigo]['Alunos']:
+            relacao[codigo]['Alunos'][periodo] = {}
+        aluno = {'Nome': nome, 'Ingresso': ingresso}
+        relacao[codigo]['Alunos'][periodo][matricula] = aluno
         num_registros += 1
 
     print('{} registros.'.format(num_registros))
     return relacao
 
 
-def ALUTEL(arquivo, encoding='utf-16'):
+def ALUTEL(arquivo):
     '''Extrai o nome completo, telefone de contato e o e-mail registrados
     para cada aluno(a) listado(a) no arquivo de entrada.
 
@@ -38,10 +48,8 @@ def ALUTEL(arquivo, encoding='utf-16'):
     arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Acompanhamento > Alunos > ALUTEL
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     '''
-    content = utils.load(arquivo, encoding)
+    content = utils.load(arquivo)
 
     relacao = {}
     print('Extração de dados.')

@@ -11,20 +11,18 @@ import re
 from SIGRA import utils
 
 
-def CUREST(in_files, encoding='utf-16'):
+def CUREST(in_files):
     raise NotImplementedError
 
 
-def CUREGEP(in_files, encoding='utf-16'):
+def CUREGEP(arquivos):
     '''Retorna um dicionário com as informações de entrada/saída de alunos
     para cada período no(s) arquivo(s) de entrada.
 
     Argumentos:
-    in_file -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivos -- lista contendo o caminho para cada arquivo contendo os dados,
+               que deve ser o relatório exportado via:
                SIGRA > Planejamento > Curso > CUREGEP
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     '''
     def lista_periodos(line):
         REGEX = r'^ +(\d{4}/\d) +(\d{4}/\d) +(\d{4}/\d) +(\d{4}/\d)$'
@@ -42,8 +40,8 @@ def CUREGEP(in_files, encoding='utf-16'):
         return [e for e in lista_estatistica(line).groups()]
 
     stats = {}
-    for arquivo in in_files:
-        content = utils.load(arquivo, encoding).split('\n')
+    for arquivo in arquivos:
+        content = utils.load(arquivo).split('\n')
 
         i = 0
         while not lista_periodos(content[i]):

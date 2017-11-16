@@ -14,8 +14,7 @@ from SIGRA.Planejamento import Fluxo
 from SIGRA.Planejamento import Oferta
 
 
-def alunos_matriculados_por_semestre(arq_alunos, encoding_alunos,
-                                     arq_matriculados, encoding_matriculados,
+def alunos_matriculados_por_semestre(arq_alunos, arq_matriculados,
                                      habilitacoes=[]):
     '''Retorna um dicionário indicando, para cada período letivo em que uma
     disciplina foi oferecida, quantos alunos de determinadas habilitações foram
@@ -25,18 +24,14 @@ def alunos_matriculados_por_semestre(arq_alunos, encoding_alunos,
     arq_alunos -- caminho para o arquivo contendo os dados, que deve ser o
                   relatório exportado via:
                   SIGRA > Acompanhamento > Alunos > ALUREL
-    encoding_alunos -- a codificação do arquivo de entrada.
-                       (default utf-16)
     arq_matriculados -- caminho para o arquivo contendo os dados, que deve ser
                         o relatório exportado via:
                         SIGRA > Acompanhamento > Histórico Escolar > HEDIS
-    encoding_matriculados -- a codificação do arquivo de entrada.
-                             (default utf-16)
     habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                     todas.
                     (default [])
     '''
-    alunos = Alunos.ALUREL(arq_alunos, encoding_alunos)
+    alunos = Alunos.ALUREL(arq_alunos)
 
     if not habilitacoes:
         habilitacoes = alunos.keys()
@@ -44,7 +39,7 @@ def alunos_matriculados_por_semestre(arq_alunos, encoding_alunos,
                      for periodo in alunos[habilitacao]['Alunos'].values()
                      for m in periodo)
 
-    matriculados = Historico.HEDIS(arq_matriculados, encoding_matriculados)
+    matriculados = Historico.HEDIS(arq_matriculados)
 
     contador = {}
     for periodo in matriculados:
@@ -57,20 +52,18 @@ def alunos_matriculados_por_semestre(arq_alunos, encoding_alunos,
     return contador
 
 
-def arquivo_de_emails(arquivo, encoding='utf-16',
-                      contact='{nome} <{email}>', out_file='emails.txt'):
+def arquivo_de_emails(arquivo, contact='{nome} <{email}>',
+                      out_file='emails.txt'):
     '''Gera um arquivo com a lista de e-mails dos alunos regulares de um curso.
 
     Argumentos:
     arquivo -- arquivo contendo os dados, que deve ser o relatório exportado
                via: SIGRA > Acompanhamento > Alunos > ALUTEL
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     contact -- formatação de cada registro
                (default nome <email>)
     out_file -- arquivo onde gravas a lista de e-mails.
     '''
-    relacao = Alunos.ALUTEL(arquivo, encoding=encoding)
+    relacao = Alunos.ALUTEL(arquivo)
     emails = [contact.format(nome=info['nome'], email=info['e-mail'],
                              telefone=info['telefone'])
               for info in relacao.values()]
@@ -79,19 +72,16 @@ def arquivo_de_emails(arquivo, encoding='utf-16',
         f.write('\n'.join(email for email in sorted(emails)))
 
 
-def csv_com_entrada_saida_de_alunos(arquivos, encoding='utf-16',
-                                    out_file='stats.csv'):
+def csv_com_entrada_saida_de_alunos(arquivos, out_file='stats.csv'):
     '''Gera um arquivo com a as informações de entrada/saída de alunos do curso
     por semestre.
 
     Argumentos:
     arquivo -- arquivo contendo os dados, que deve ser o relatório exportado
                via: SIGRA > Planejamento > Curso > CUREGEP
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     out_file -- arquivo onde gravar os dados.
     '''
-    stats = Curso.CUREGEP(arquivos, encoding=encoding)
+    stats = Curso.CUREGEP(arquivos)
     col_names = sorted(next(iter(stats.values())).keys())
 
     with open(out_file, 'w') as f:
@@ -141,8 +131,8 @@ def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
     return total / n if n else 0
 
 
-def oferta_obrigatorias(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
-                        habilitacao='', mostra_opcoes=False):
+def oferta_obrigatorias(arq_oferta, arq_fluxo, habilitacao='',
+                        mostra_opcoes=False):
     '''Imprime o fluxo de uma habilitação, indicando a oferta de disciplinas
     obrigatórias.
 
@@ -150,13 +140,9 @@ def oferta_obrigatorias(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
     arq_oferta -- caminho para o arquivo contendo os dados, que deve ser o
                   relatório exportado via:
                   SIGRA > Planejamento > Fluxo > FLULST
-    encoding_oferta -- a codificação do arquivo de entrada.
-                       (default utf-16)
     arq_fluxo -- caminho para o arquivo contendo os dados, que deve ser o
                  relatório exportado via:
                  SIGRA > Planejamento > Fluxo > FLULST
-    fluxo_encoding -- a codificação do arquivo de entrada.
-                      (default utf-16)
     habilitacao -- parte do nome da habilitação para qual se quer filtrar as
                    turmas reservadas
                    (default '')
@@ -166,9 +152,9 @@ def oferta_obrigatorias(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
     '''
     DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-    oferta = Oferta.OFELST(arq_oferta, encoding_oferta)
+    oferta = Oferta.OFELST(arq_oferta)
 
-    fluxo = Fluxo.FLULST(arq_fluxo, fluxo_encoding)
+    fluxo = Fluxo.FLULST(arq_fluxo)
     for disciplinas in fluxo.values():
         if 'OPT' in disciplinas:
             del disciplinas['OPT']
@@ -205,17 +191,15 @@ def oferta_obrigatorias(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
                                     print('\t\t', t, dia, hora)
 
 
-def pretty_fluxo(arquivo, encoding):
+def pretty_fluxo(arquivo):
     '''Imprime o fluxo de uma habilitação.
 
     Argumentos:
     arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Planejamento > Fluxo > FLULST
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     '''
-    fluxo = Fluxo.FLULST(arquivo, encoding)
+    fluxo = Fluxo.FLULST(arquivo)
 
     print()
     for p, periodo in fluxo.items():
@@ -231,8 +215,7 @@ def pretty_fluxo(arquivo, encoding):
         print()
 
 
-def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
-                 habilitacao='', filtro_tipo=[]):
+def pretty_grade(arq_oferta, arq_fluxo, habilitacao='', filtro_tipo=[]):
     '''Imprime o fluxo de uma habilitação, em grade para facilitar a
     visualização, indicando a oferta de disciplinas obrigatórias.
 
@@ -240,13 +223,9 @@ def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
     arq_oferta -- caminho para o arquivo contendo os dados, que deve ser o
                   relatório exportado via:
                   SIGRA > Planejamento > Fluxo > FLULST
-    encoding_oferta -- a codificação do arquivo de entrada.
-                       (default utf-16)
     arq_fluxo -- caminho para o arquivo contendo os dados, que deve ser o
                  relatório exportado via:
                  SIGRA > Planejamento > Fluxo > FLULST
-    fluxo_encoding -- a codificação do arquivo de entrada.
-                      (default utf-16)
     habilitacao -- parte do nome da habilitação para qual se quer filtrar as
                    turmas reservadas.
                    (default '')
@@ -259,9 +238,9 @@ def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
     HORARIOS = ['{:02d}:00 {:02d}:50'.format(h, h + 1)
                 for h in range(8, 19, 2)]
 
-    oferta = Oferta.OFELST(arq_oferta, encoding_oferta)
+    oferta = Oferta.OFELST(arq_oferta)
 
-    fluxo = Fluxo.FLULST(arq_fluxo, fluxo_encoding)
+    fluxo = Fluxo.FLULST(arq_fluxo)
     for tipo in filtro_tipo:
         for disciplinas in fluxo.values():
             if tipo in disciplinas:
@@ -306,7 +285,7 @@ def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
                 print()
 
 
-def turmas_ofertadas(professores, arquivo, encoding='utf-16'):
+def turmas_ofertadas(professores, arquivo):
     ''' Dada uma lista de nomes de professores, retorna um dicionário contendo
     as turmas a serem ofertadas por cada professor(a).
 
@@ -315,10 +294,8 @@ def turmas_ofertadas(professores, arquivo, encoding='utf-16'):
     arquivo -- caminho para o arquivo contendo os dados, que deve ser o
                relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
-    encoding -- a codificação do arquivo de entrada.
-               (default utf-16)
     '''
-    oferta = Oferta.OFELST(arquivo, encoding)
+    oferta = Oferta.OFELST(arquivo)
     oferta_prof = {}
 
     for professor in professores:
@@ -335,19 +312,19 @@ def turmas_ofertadas(professores, arquivo, encoding='utf-16'):
 
 
 if __name__ == '__main__':
-    # arquivo_de_emails(arquivo='relatorios/Acompanhamento/Alunos/ALUTEL/2017-2.txt', encoding='ISO-8859-1')
+    # arquivo_de_emails(arquivo='relatorios/Acompanhamento/Alunos/ALUTEL/2017-2.txt')
 
     # csv_com_entrada_saida_de_alunos('relatorios/Planejamento/Curso/CUREGEP/' + f for f in ['1997.txt', '1998.txt', '2000.txt', '2002.txt', '2004.txt', '2006.txt', '2008.txt', '2010.txt', '2012.txt', '2014.txt', '2016.txt'])
 
     # print(turmas_ofertadas(['guilherme novaes'], 'relatorios/Planejamento/Oferta/OFELST/2018-1.txt'))
 
-    # pretty_fluxo('relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16')
+    # pretty_fluxo('relatorios/Planejamento/Fluxo/FLULST/6912.txt')
 
-    # oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat')
-    # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat', ['OPT'])
+    # oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'mecat')
+    # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'mecat', ['OPT'])
 
-    # lista = alunos_matriculados_por_semestre('relatorios/Acompanhamento/Alunos/ALUREL/949.txt', 'utf-16',
-    #                                          'relatorios/Acompanhamento/HistoricoEscolar/HEDIS/118044_2017-2.txt', 'utf-16')
+    # lista = alunos_matriculados_por_semestre('relatorios/Acompanhamento/Alunos/ALUREL/949.txt',
+    #                                          'relatorios/Acompanhamento/HistoricoEscolar/HEDIS/118044_2017-2.txt')
     # print(lista)
     # print(media_de_alunos_matriculados_por_semestre(lista, True, '2014/2 <= {} <= 2017/2'))
 
