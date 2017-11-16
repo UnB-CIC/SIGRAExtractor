@@ -106,17 +106,6 @@ def OFELST(arquivo, encoding='utf-16'):
 
         m = re.search(REGEX, line)
         if m:  # nova turma
-            # t = m.group(1)
-            # descricao = m.group(2).strip()
-            # vagas = int(m.group(3))
-            # turno = m.group(4)
-            # dia = m.group(5)
-            # horario = m.group(6)
-            # local = m.group(7)
-            # restante = m.group(8).strip()
-
-            # professor, reserva, obs = parse_Prof_Reserva_Obs(restante)
-
             t = m.group(1)
             descricao = m.group(2).strip()
             vagas = int(m.group(3))
@@ -162,7 +151,6 @@ def OFELST(arquivo, encoding='utf-16'):
         aula = {dia: {'horário': horario, 'local': local}} if dia else {}
         return (t, descricao, vagas, turno, aula, professor, reserva, obs)
 
-    print('Leitura dos dados de {}.'.format(arquivo))
     content = clean_file_content(arquivo, encoding)
 
     oferta = {}
