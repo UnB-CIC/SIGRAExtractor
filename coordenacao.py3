@@ -8,7 +8,7 @@
 import re
 
 from SIGRA.Acompanhamento import Alunos
-from SIGRA.Acompanhamento import Historico
+from SIGRA.Acompanhamento import HistoricoEscolar
 from SIGRA.Planejamento import Curso
 from SIGRA.Planejamento import Fluxo
 from SIGRA.Planejamento import Oferta
@@ -31,7 +31,7 @@ def alunos_matriculados_por_semestre(arq_alunos, arq_matriculados,
                     todas.
                     (default [])
     '''
-    alunos = Alunos.ALUREL(arq_alunos)
+    alunos = Alunos.Relacao(arq_alunos)
 
     if not habilitacoes:
         habilitacoes = alunos.keys()
@@ -39,7 +39,7 @@ def alunos_matriculados_por_semestre(arq_alunos, arq_matriculados,
                      for periodo in alunos[habilitacao]['Alunos'].values()
                      for m in periodo)
 
-    matriculados = Historico.HEDIS(arq_matriculados)
+    matriculados = HistoricoEscolar.AlunosQueCursaramDeterminadaDisciplina(arq_matriculados)
 
     contador = {}
     for periodo in matriculados:
@@ -64,7 +64,7 @@ def arquivo_de_emails(arquivo, contact='{nome} <{email}>',
                (default nome <email>)
     out_file -- arquivo onde gravas a lista de e-mails.
     '''
-    relacao = Alunos.ALUTEL(arquivo)
+    relacao = Alunos.Contatos(arquivo)
     emails = [contact.format(nome=info['nome'], email=info['e-mail'],
                              telefone=info['telefone'])
               for info in relacao.values()]
@@ -83,7 +83,7 @@ def csv_com_entrada_saida_de_alunos(arquivos, out_file='stats.csv'):
                SIGRA > Planejamento > Curso > CUREGEP
     out_file -- arquivo onde gravar os dados.
     '''
-    stats = Curso.CUREGEP(arquivos)
+    stats = Curso.Estatisticas(arquivos)
     col_names = sorted(next(iter(stats.values())).keys())
 
     with open(out_file, 'w') as f:
@@ -141,7 +141,7 @@ def oferta_obrigatorias(arq_oferta, arq_fluxo, habilitacao='',
     Argumentos:
     arq_oferta -- caminho para o arquivo (UTF-16) contendo os dados, que deve
                   ser o relatório exportado via:
-                  SIGRA > Planejamento > Fluxo > FLULST
+                  SIGRA > Planejamento > Oferta > OFELST
     arq_fluxo -- caminho para o arquivo (UTF-16) contendo os dados, que deve
                  ser o relatório exportado via:
                  SIGRA > Planejamento > Fluxo > FLULST
@@ -154,9 +154,9 @@ def oferta_obrigatorias(arq_oferta, arq_fluxo, habilitacao='',
     '''
     DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-    oferta = Oferta.OFELST(arq_oferta)
+    oferta = Oferta.Listagem(arq_oferta)
 
-    fluxo = Fluxo.FLULST(arq_fluxo)
+    fluxo = Fluxo.Listagem(arq_fluxo)
     for disciplinas in fluxo.values():
         if 'OPT' in disciplinas:
             del disciplinas['OPT']

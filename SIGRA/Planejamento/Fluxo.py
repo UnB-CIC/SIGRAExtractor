@@ -11,7 +11,7 @@ import re
 from SIGRA import utils
 
 
-def FLULST(arquivo):
+def Listagem(arquivo):
     '''Retorna um dicionário com as informações das disciplinas listadas no
     fluxo em cada período, extraindo as informações do arquivo de entrada.
 

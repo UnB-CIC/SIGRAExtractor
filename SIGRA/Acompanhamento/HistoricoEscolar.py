@@ -1,5 +1,5 @@
 #  -*- coding: utf-8 -*-
-#    @package: Historico.py
+#    @package: HistoricoEscolar.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções de extração de informações de relatórios de Acompanhamento do Sistema
@@ -10,8 +10,8 @@ import re
 from SIGRA import utils
 
 
-def HEDIS(arquivo):
-    '''Extrai as informações dos alunos matriculados em uma disciplina.
+def AlunosQueCursaramDeterminadaDisciplina(arquivo):
+    '''Extrai as informações dos alunos que cursaram determinada disciplina.
 
     Argumentos:
     arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser

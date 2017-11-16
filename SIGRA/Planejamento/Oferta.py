@@ -10,7 +10,7 @@ import re
 from SIGRA import utils
 
 
-def OFELST(arquivo):
+def Listagem(arquivo):
     '''Retorna um dicionário com as informações de cada disciplina
     ofertada, extraindo as informações do arquivo de entrada.
 

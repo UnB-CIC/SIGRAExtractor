@@ -11,7 +11,7 @@ import re
 from SIGRA import utils
 
 
-def CUREGEP(arquivos):
+def Estatisticas(arquivos):
     '''Retorna um dicionário com as informações de entrada/saída de alunos
     para cada período no(s) arquivo(s) de entrada.
 
