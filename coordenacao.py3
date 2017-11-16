@@ -16,7 +16,7 @@ from SIGRA.Planejamento import Oferta
 
 def alunos_matriculados_por_semestre(arq_alunos, encoding_alunos,
                                      arq_matriculados, encoding_matriculados,
-                                     habilitacoes=None):
+                                     habilitacoes=[]):
     '''Retorna um dicionário indicando, para cada período letivo em que uma
     disciplina foi oferecida, quantos alunos de determinadas habilitações foram
     matriculados.
@@ -32,9 +32,9 @@ def alunos_matriculados_por_semestre(arq_alunos, encoding_alunos,
                         SIGRA > Acompanhamento > Histórico Escolar > HEDIS
     encoding_matriculados -- a codificação do arquivo de entrada.
                              (default utf-16)
-    habilitacoes -- conjunto de habilitações de interesse. Deixe como None para
+    habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                     todas.
-                    (default None)
+                    (default [])
     '''
     alunos = Alunos.ALUREL(arq_alunos, encoding_alunos)
 
@@ -232,7 +232,7 @@ def pretty_fluxo(arquivo, encoding):
 
 
 def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
-                 habilitacao=''):
+                 habilitacao='', filtro_tipo=[]):
     '''Imprime o fluxo de uma habilitação, em grade para facilitar a
     visualização, indicando a oferta de disciplinas obrigatórias.
 
@@ -248,8 +248,12 @@ def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
     fluxo_encoding -- a codificação do arquivo de entrada.
                       (default utf-16)
     habilitacao -- parte do nome da habilitação para qual se quer filtrar as
-                   turmas reservadas
+                   turmas reservadas.
                    (default '')
+    filtro_tipo -- lista com os tipos de disciplinas a serem filtradas. Por
+                   exemplo, para remover as optativas basta incluir o elemento
+                   'OPT' a lista. Outras opções são 'OBR', 'OBS', 'ML', etc.
+                   (default [])
     '''
     DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
     HORARIOS = ['{:02d}:00 {:02d}:50'.format(h, h + 1)
@@ -258,9 +262,10 @@ def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
     oferta = Oferta.OFELST(arq_oferta, encoding_oferta)
 
     fluxo = Fluxo.FLULST(arq_fluxo, fluxo_encoding)
-    for disciplinas in fluxo.values():
-        if 'OPT' in disciplinas:
-            del disciplinas['OPT']
+    for tipo in filtro_tipo:
+        for disciplinas in fluxo.values():
+            if tipo in disciplinas:
+                del disciplinas[tipo]
 
     for p in fluxo:
         print('\n\nPeríodo: ', p)
@@ -274,6 +279,8 @@ def pretty_grade(arq_oferta, encoding_oferta, arq_fluxo, fluxo_encoding,
                 aulas_do_dia = ''
                 for disciplinas in fluxo[p].values():
                     for codigo in disciplinas:
+                        if codigo not in oferta:
+                            continue
                         turmas = oferta[codigo]['turmas']
                         turmas = [turma for turma, detalhes in turmas.items()
                                   for reserva in detalhes['reserva']
@@ -337,10 +344,11 @@ if __name__ == '__main__':
     # pretty_fluxo('relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16')
 
     # oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat')
-    # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat')
+    # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'utf-16', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'utf-16', 'mecat', ['OPT'])
 
     # lista = alunos_matriculados_por_semestre('relatorios/Acompanhamento/Alunos/ALUREL/949.txt', 'utf-16',
     #                                          'relatorios/Acompanhamento/HistoricoEscolar/HEDIS/118044_2017-2.txt', 'utf-16')
+    # print(lista)
     # print(media_de_alunos_matriculados_por_semestre(lista, True, '2014/2 <= {} <= 2017/2'))
 
     pass
