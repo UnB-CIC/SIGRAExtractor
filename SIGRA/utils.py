@@ -13,7 +13,7 @@ def capitalize(string):
 
 
 def load(arquivo):
-    '''Lê o conteúdo do arquivo dado e o retorna.'''
+    '''Lê o conteúdo do arquivo (UTF-16) dado e o retorna.'''
     print('Leitura dos dados de {}.'.format(arquivo))
 
     with open(arquivo, encoding='utf-16') as f:

@@ -15,8 +15,8 @@ def ALUREL(arquivo):
     arquivo com a relação de alunos.
 
     Argumentos:
-    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
                SIGRA > Acompanhamento > Alunos > ALUTEL
     '''
     content = utils.load(arquivo)
@@ -45,8 +45,8 @@ def ALUTEL(arquivo):
     para cada aluno(a) listado(a) no arquivo de entrada.
 
     Argumentos:
-    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
                SIGRA > Acompanhamento > Alunos > ALUTEL
     '''
     content = utils.load(arquivo)

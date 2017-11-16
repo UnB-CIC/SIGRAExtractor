@@ -21,11 +21,11 @@ def alunos_matriculados_por_semestre(arq_alunos, arq_matriculados,
     matriculados.
 
     Argumentos:
-    arq_alunos -- caminho para o arquivo contendo os dados, que deve ser o
-                  relatório exportado via:
+    arq_alunos -- caminho para o arquivo (UTF-16) contendo os dados, que deve
+                  ser o relatório exportado via:
                   SIGRA > Acompanhamento > Alunos > ALUREL
-    arq_matriculados -- caminho para o arquivo contendo os dados, que deve ser
-                        o relatório exportado via:
+    arq_matriculados -- caminho para o arquivo (UTF-16) contendo os dados, que
+                        deve ser o relatório exportado via:
                         SIGRA > Acompanhamento > Histórico Escolar > HEDIS
     habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                     todas.
@@ -57,8 +57,9 @@ def arquivo_de_emails(arquivo, contact='{nome} <{email}>',
     '''Gera um arquivo com a lista de e-mails dos alunos regulares de um curso.
 
     Argumentos:
-    arquivo -- arquivo contendo os dados, que deve ser o relatório exportado
-               via: SIGRA > Acompanhamento > Alunos > ALUTEL
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
+               SIGRA > Acompanhamento > Alunos > ALUTEL
     contact -- formatação de cada registro
                (default nome <email>)
     out_file -- arquivo onde gravas a lista de e-mails.
@@ -77,8 +78,9 @@ def csv_com_entrada_saida_de_alunos(arquivos, out_file='stats.csv'):
     por semestre.
 
     Argumentos:
-    arquivo -- arquivo contendo os dados, que deve ser o relatório exportado
-               via: SIGRA > Planejamento > Curso > CUREGEP
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
+               SIGRA > Planejamento > Curso > CUREGEP
     out_file -- arquivo onde gravar os dados.
     '''
     stats = Curso.CUREGEP(arquivos)
@@ -137,11 +139,11 @@ def oferta_obrigatorias(arq_oferta, arq_fluxo, habilitacao='',
     obrigatórias.
 
     Argumentos:
-    arq_oferta -- caminho para o arquivo contendo os dados, que deve ser o
-                  relatório exportado via:
+    arq_oferta -- caminho para o arquivo (UTF-16) contendo os dados, que deve
+                  ser o relatório exportado via:
                   SIGRA > Planejamento > Fluxo > FLULST
-    arq_fluxo -- caminho para o arquivo contendo os dados, que deve ser o
-                 relatório exportado via:
+    arq_fluxo -- caminho para o arquivo (UTF-16) contendo os dados, que deve
+                 ser o relatório exportado via:
                  SIGRA > Planejamento > Fluxo > FLULST
     habilitacao -- parte do nome da habilitação para qual se quer filtrar as
                    turmas reservadas
@@ -195,8 +197,8 @@ def pretty_fluxo(arquivo):
     '''Imprime o fluxo de uma habilitação.
 
     Argumentos:
-    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
                SIGRA > Planejamento > Fluxo > FLULST
     '''
     fluxo = Fluxo.FLULST(arquivo)
@@ -220,11 +222,11 @@ def pretty_grade(arq_oferta, arq_fluxo, habilitacao='', filtro_tipo=[]):
     visualização, indicando a oferta de disciplinas obrigatórias.
 
     Argumentos:
-    arq_oferta -- caminho para o arquivo contendo os dados, que deve ser o
-                  relatório exportado via:
+    arq_oferta -- caminho para o arquivo (UTF-16) contendo os dados, que deve
+                  ser o relatório exportado via:
                   SIGRA > Planejamento > Fluxo > FLULST
-    arq_fluxo -- caminho para o arquivo contendo os dados, que deve ser o
-                 relatório exportado via:
+    arq_fluxo -- caminho para o arquivo (UTF-16) contendo os dados, que deve
+                 ser o relatório exportado via:
                  SIGRA > Planejamento > Fluxo > FLULST
     habilitacao -- parte do nome da habilitação para qual se quer filtrar as
                    turmas reservadas.
@@ -291,8 +293,8 @@ def turmas_ofertadas(professores, arquivo):
 
     Argumentos:
     professores -- lista de nomes [parciais] professores.
-    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
     '''
     oferta = Oferta.OFELST(arquivo)

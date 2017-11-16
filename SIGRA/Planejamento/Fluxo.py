@@ -16,8 +16,8 @@ def FLULST(arquivo):
     fluxo em cada período, extraindo as informações do arquivo de entrada.
 
     Argumentos:
-    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
                SIGRA > Planejamento > Fluxo > FLULST
     '''
     def clean_file_content(arquivo):

@@ -15,8 +15,8 @@ def OFELST(arquivo):
     ofertada, extraindo as informações do arquivo de entrada.
 
     Argumentos:
-    arquivo -- caminho para o arquivo contendo os dados, que deve ser o
-               relatório exportado via:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
 
     No caso de pré-requisitos, o resultado é uma lista em que cada item
