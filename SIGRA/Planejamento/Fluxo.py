@@ -106,11 +106,7 @@ def Listagem(arquivo):
                             pr += ' ' + content[i].strip()
                             i += 1
 
-                    pre_reqs = []
-                    for opcoes in pr.split(' OU'):
-                        pre_reqs.append(re.findall(r'\d{6}', opcoes))
-                    disciplina['pré-requisitos'] = [c for c in pre_reqs
-                                                    if c]
+                    disciplina['pré-requisitos'] = utils.parse_pre_requisitos(pr)
 
                     periodo[tipo][codigo] = disciplina
 

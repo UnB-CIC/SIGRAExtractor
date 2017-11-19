@@ -10,8 +10,11 @@ import re
 from SIGRA.Acompanhamento import Alunos
 from SIGRA.Acompanhamento import HistoricoEscolar
 from SIGRA.Planejamento import Curso
+from SIGRA.Planejamento import Disciplina
 from SIGRA.Planejamento import Fluxo
 from SIGRA.Planejamento import Oferta
+from SIGRA import utils
+
 
 
 def alunos_matriculados_por_semestre(arq_alunos, arq_matriculados,
@@ -201,19 +204,21 @@ def pretty_fluxo(arquivo):
                o relatório exportado via:
                SIGRA > Planejamento > Fluxo > FLULST
     '''
-    fluxo = Fluxo.FLULST(arquivo)
+    fluxo = Fluxo.Listagem(arquivo)
 
     print()
     for p, periodo in fluxo.items():
         num_cred = 0
         for disciplinas in periodo.values():
             for d in disciplinas.values():
-                num_cred += sum(int(c) for c in d['créditos'].split(':')[:-2])
+                creditos = utils.str2creditos(d['créditos'])
+                num_cred += sum(v for v in creditos.values()) - creditos['Estudo']
         print('{} - ({} créditos)'.format(p, num_cred))
 
         for tipo, disciplinas in sorted(periodo.items()):
             for codigo, detalhes in sorted(disciplinas.items()):
                 print(tipo, codigo, detalhes['nome'])
+
         print()
 
 
@@ -240,9 +245,9 @@ def pretty_grade(arq_oferta, arq_fluxo, habilitacao='', filtro_tipo=[]):
     HORARIOS = ['{:02d}:00 {:02d}:50'.format(h, h + 1)
                 for h in range(8, 19, 2)]
 
-    oferta = Oferta.OFELST(arq_oferta)
+    oferta = Oferta.Listagem(arq_oferta)
 
-    fluxo = Fluxo.FLULST(arq_fluxo)
+    fluxo = Fluxo.Listagem(arq_fluxo)
     for tipo in filtro_tipo:
         for disciplinas in fluxo.values():
             if tipo in disciplinas:
@@ -297,7 +302,7 @@ def turmas_ofertadas(professores, arquivo):
                o relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
     '''
-    oferta = Oferta.OFELST(arquivo)
+    oferta = Oferta.Listagem(arquivo)
     oferta_prof = {}
 
     for professor in professores:
@@ -313,14 +318,26 @@ def turmas_ofertadas(professores, arquivo):
     return oferta_prof
 
 
-if __name__ == '__main__':
-    # arquivo_de_emails(arquivo='relatorios/Acompanhamento/Alunos/ALUTEL/2017-2.txt')
+def caminho():
+    return 'relatorios'
 
-    # csv_com_entrada_saida_de_alunos('relatorios/Planejamento/Curso/CUREGEP/' + f for f in ['1997.txt', '1998.txt', '2000.txt', '2002.txt', '2004.txt', '2006.txt', '2008.txt', '2010.txt', '2012.txt', '2014.txt', '2016.txt'])
+
+def acom(arq):
+    return '/'.join([caminho(), 'Acompanhamento', arq])
+
+
+def plan(arq):
+    return '/'.join([caminho(), 'Planejamento', arq])
+
+
+if __name__ == '__main__':
+    # arquivo_de_emails(acom('Alunos/ALUTEL/2017-2.txt'))
+
+    # csv_com_entrada_saida_de_alunos(plan('Curso/CUREGEP/' + f for f in ['1997.txt', '1998.txt', '2000.txt', '2002.txt', '2004.txt', '2006.txt', '2008.txt', '2010.txt', '2012.txt', '2014.txt', '2016.txt']))
 
     # print(turmas_ofertadas(['guilherme novaes'], 'relatorios/Planejamento/Oferta/OFELST/2018-1.txt'))
 
-    # pretty_fluxo('relatorios/Planejamento/Fluxo/FLULST/6912.txt')
+    # pretty_fluxo(plan('Fluxo/FLULST/6912.txt'))
 
     # oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'mecat')
     # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'mecat', ['OPT'])
@@ -330,4 +347,6 @@ if __name__ == '__main__':
     # print(lista)
     # print(media_de_alunos_matriculados_por_semestre(lista, True, '2014/2 <= {} <= 2017/2'))
 
+    # disciplinas = Disciplina.Listagem(plan('Disciplina/DISLST/2017-2.txt'))  # teste.txt'))
+    # print(disciplinas['113476'])
     pass

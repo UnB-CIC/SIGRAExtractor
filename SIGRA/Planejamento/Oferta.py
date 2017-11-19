@@ -19,15 +19,7 @@ def Listagem(arquivo):
                o relatório exportado via:
                SIGRA > Planejamento > Oferta > OFELST
 
-    No caso de pré-requisitos, o resultado é uma lista em que cada item
-    tem uma relação 'OU' com os demais, e cada item é uma lista cujos
-    itens têm uma relação 'E' entre si. Por exemplo, a listagem da
-    disciplina 116858 - Informática Aplicada a Educação, seria a lista
-    [['116343'], ['125172', '194531']], que deve ser interpretada como
-    116343 OU (125172 E 194531). Ou seja, para matrícula na disciplina
-    116858, é preciso ter sido aprovado na disciplina 'Linguagens de
-    Programação' ou ter sido aprovado em ambas as disciplinas
-    'Aprendizagem e Ensino' e 'Didática Fundamental'.
+    No caso de pré-requisitos, veja a função utils.parse_pre_requisitos.
     '''
     def clean_file_content(arquivo):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
@@ -50,8 +42,8 @@ def Listagem(arquivo):
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
         m = re.search(CREDITOS, line)
-        return {'Teoria': int(m.group(1)), 'Prática': int(m.group(2)),
-                'Extensão': int(m.group(3)), 'Estudo': int(m.group(4))}
+        return utils.creditos2str(m.group(1), m.group(2), m.group(3),
+                                  m.group(4))
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
