@@ -60,9 +60,11 @@ def Listagem(arquivo):
         if eh_disciplina(content[i]):
             # No caso de disciplinas "repetidas", considera apenas a última
             # informação. Ex: 181315 que é listada em ADM e EPR.
-            orgao, nivel, nome, rest, creditos, domi = parse_disciplina(content[i])
+            (orgao, nivel, nome, rest,
+             creditos, domi) = parse_disciplina(content[i])
             i += 1
-            codigo, resto_do_nome = re.search(r'(\d{6})(.*)', content[i]).groups()
+            codigo, resto_do_nome = re.search(r'(\d{6})(.*)',
+                                              content[i]).groups()
             if resto_do_nome:
                 nome += ' ' + utils.capitalize(resto_do_nome.strip())
 
@@ -78,11 +80,12 @@ def Listagem(arquivo):
                     if m:
                         pre_reqs += m.group(1)
                 i += 1
-            i -= 1  # será incrementado novamente
+            i -= 1  # Saiu da repetição, mas será incrementado novamente
 
+            pre_reqs = utils.parse_pre_requisitos(pre_reqs)
             relacao[codigo] = {'Nome': nome, 'Órgão': orgao,
                                'Créditos': creditos,
-                               'Pré-requisitos': utils.parse_pre_requisitos(pre_reqs)}
+                               'Pré-requisitos': pre_reqs}
 
         i += 1
 

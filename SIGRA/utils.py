@@ -41,10 +41,10 @@ def parse_pre_requisitos(pre_reqs):
     Programação' ou ter sido aprovado em ambas as disciplinas 'Aprendizagem e
     Ensino' e 'Didática Fundamental'.
     '''
-    pr = []
+    pre_requisitos = []
     for opcoes in pre_reqs.split('OU'):
-        pr.append(findall(r'\d{6}', opcoes))
-    return [p for p in pr if p]
+        pre_requisitos.append(findall(r'\d{6}', opcoes))
+    return [p for p in pre_requisitos if p]
 
 
 def str2creditos(string):

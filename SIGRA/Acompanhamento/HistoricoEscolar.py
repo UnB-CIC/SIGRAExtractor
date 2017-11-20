@@ -10,7 +10,7 @@ import re
 from SIGRA import utils
 
 
-def AlunosQueCursaramDeterminadaDisciplina(arquivo):
+def AlunosQueCursaramDisciplina(arquivo):
     '''Extrai as informações dos alunos que cursaram determinada disciplina.
 
     Argumentos:
