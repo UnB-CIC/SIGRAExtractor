@@ -21,12 +21,11 @@ def Listagem(arquivo):
 
     No caso de pré-requisitos, veja a função utils.parse_pre_requisitos.
     '''
-    def clean_file_content(arquivo):
+    def preprocess(content):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
                  'Período :.*\d{4}/\d.*[\s\S]'
         FOOTER = r' Observações :[.*|\s\S]+?lstofelst'
 
-        content = utils.load(arquivo)
         content = re.sub(HEADER, '', content)
         content = re.sub(FOOTER, '', content)
 
@@ -42,8 +41,8 @@ def Listagem(arquivo):
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
         m = re.search(CREDITOS, line)
-        return utils.creditos2str(m.group(1), m.group(2), m.group(3),
-                                  m.group(4))
+        return utils.creditos2str(m.group(1), m.group(2),
+                                  m.group(3), m.group(4))
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
@@ -54,44 +53,27 @@ def Listagem(arquivo):
         return m.group(0) if m else ''
 
     def parse_Prof_Reserva_Obs(line):
-        if '  ' in line:
-            i = line.index('  ')
-            professor = line[:i]
-            line = line[i:].strip()
-        else:
-            professor = line.strip()
+        professor = ''
+        reserva = {}
+        obs = ''
 
-        m = re.search(r'(\w.*?)/(\d+)[ \s\S]', professor)
-        if m:
-            if '   ' in m.group(1):
-                split = m.group(1).split('   ')
-                professor = split[0]
-                for x in range(1, len(split)):
-                    m = re.search(r'(\w.*?)/(\d+)[ \s\S]', split[x])
-                    if m:
-                        reserva = {m.group(1): int(m.group(2))}
-                        break
-            else:
-                professor = ''
-                reserva = {m.group(1): int(m.group(2))}
-        else:
-            m = re.search(r'(\w.*?)/(\d+)[ \s\S]', line)
+        partes = [p.strip() for p in line.split('   ') if p.strip() and '0' not in p]
+        for parte in partes:
+            m = re.search(r'^(.*)/(\d+)$', parte)
             if m:
-                reserva = {m.group(1).split('   ')[-1]: int(m.group(2))}
+                reserva[m.group(1)] = int(m.group(2))
             else:
-                reserva = {}
-            # reserva = {m.group(1): int(m.group(2))} if m else {}
-
-        m = re.search(r'(\*+)[ \s\S]', line)
-        obs = m.group(1) if m else ''
+                m = re.search(r'^(\*+)$', parte)
+                if m:
+                    obs = m.group(1)
+                else:
+                    professor = parte
         return professor, reserva, obs
 
     def parse_turma(line):
         TURNO = r'(Diurno|Noturno|Ambos)'
         DIA = r'(Segunda|Terça|Quarta|Quinta|Sexta|Sábado|Domingo)'
         HORARIO = r'(\d\d:\d\d \d\d:\d\d)'
-        # REGEX = r'^ +([A-Z]{1,3}) (.*?) (\d+) +' + TURNO + ' +' \
-        #         '' + DIA + ' +' + HORARIO + ' (.*?)  +(.*)'
         REGEX = r'^ +([A-Z]{1,3}) (.*?) (\d+) +' + TURNO + '(.*)'
 
         m = re.search(REGEX, line)
@@ -141,7 +123,7 @@ def Listagem(arquivo):
         aula = {dia: {'horário': horario, 'local': local}} if dia else {}
         return (t, descricao, vagas, turno, aula, professor, reserva, obs)
 
-    content = clean_file_content(arquivo)
+    content = preprocess(utils.load(arquivo))
 
     oferta = {}
 
@@ -195,7 +177,15 @@ def Listagem(arquivo):
                     if aula:
                         turmas[t]['aulas'].append(aula)
                     if professor:
-                        turmas[t]['professores'] += ', ' + professor
+                        if len(professor.split()) == 1:
+                            # Supondo que haja um professor com nome muito
+                            # longo, a última parte se estende em uma nova
+                            # linha
+                            turmas[t]['professores'] += ' ' + professor
+                        else:
+                            # É um nome composto de pelo menos duas partes,
+                            # supõe-se que seja de um novo professor
+                            turmas[t]['professores'] += ', ' + professor
                     if reserva:
                         turmas[t]['reserva'].update(reserva)
                     if obs:

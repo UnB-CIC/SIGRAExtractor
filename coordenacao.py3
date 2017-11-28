@@ -35,21 +35,21 @@ def alunos_matriculados_por_semestre(ALUREL, HEDIS, habilitacoes=[]):
     alunos = Alunos.Relacao(ALUREL)
 
     if not habilitacoes:
-        habilitacoes = alunos.keys()
-    matriculas = set(m for habilitacao in habilitacoes
-                     for periodo in alunos[habilitacao]['Alunos'].values()
-                     for m in periodo)
+        matriculas = set(m for infos in alunos.values()
+                         for periodo in infos['Alunos'].values()
+                         for m in periodo)
+    else:
+        matriculas = set(m for habilitacao in habilitacoes
+                         for periodo in alunos[habilitacao]['Alunos'].values()
+                         for m in periodo)
 
     matriculados = HistoricoEscolar.AlunosQueCursaramDisciplina(HEDIS)
 
     contador = {}
     for periodo in matriculados:
-        contador[periodo] = 0
-
-        for turma in matriculados[periodo]:
-            for matricula in matriculados[periodo][turma]:
-                if matricula in matriculas:
-                    contador[periodo] += 1
+        contador[periodo] = sum(1 for turma in matriculados[periodo]
+                                for m in matriculados[periodo][turma]
+                                if m in matriculas)
     return contador
 
 
@@ -98,6 +98,54 @@ def csv_com_entrada_saida_de_alunos(CUREGEPs, out_file='stats.csv'):
             f.write('\n')
 
 
+def estatistica_docente_por_semestre(HEMEN, OFELST, ignore=[]):
+    '''Cruza as informações do histórico de menções de um semestre com a lista
+    de oferta, retornando um dicionário com a informações.
+
+    Argumentos:
+    HEMEN -- caminho para o arquivo (UTF-16) contendo os dados das menções, que
+             deve ser o relatório exportado via:
+             SIGRA > Acompanhamento > Histórico Escolar > HEDIS
+    OFELST -- caminho para o arquivo (UTF-16) contendo os dados da oferta, que
+              deve ser o relatório exportado via:
+              SIGRA > Planejamento > Oferta > OFELST
+    ignore -- lista com código de disciplinas que devem ser ignoradas na
+              contabilização (como '167681' -> Trabalho de Graduação 1).
+    '''
+    estatisticas_de_mencoes = HistoricoEscolar.EstatisticaDeMencoes(HEMEN)
+    oferta = Oferta.Listagem(OFELST)
+
+    estatisticas = {}
+    for periodo in estatisticas_de_mencoes:
+        docentes = {}
+        for stats in estatisticas_de_mencoes[periodo].values():
+            for codigo in stats:
+                if codigo in ignore:
+                    continue
+                if '' in stats[codigo]['Turmas']:
+                    del stats[codigo]['Turmas']['']
+                for turma in stats[codigo]['Turmas']:
+                    if stats[codigo]['Turmas'][turma] == 0:
+                        continue
+                    if codigo in oferta:
+                        creds = utils.str2creditos(oferta[codigo]['créditos'])
+                        num_cred = sum(v for v in creds.values()) - creds['Estudo']
+
+                        if turma in oferta[codigo]['turmas']:
+                            num_alunos = stats[codigo]['Turmas'][turma]
+                            professores = oferta[codigo]['turmas'][turma]['professores'].split(',')
+                            for p in professores:
+                                p = p.strip()
+                                if p not in docentes:
+                                    docentes[p] = {'creditos': 0,
+                                                   'turmas': 0,
+                                                   'alunos': 0}
+                                docentes[p]['creditos'] += num_cred / len(professores)
+                                docentes[p]['turmas'] += 1
+                                docentes[p]['alunos'] += num_alunos
+        estatisticas[periodo] = docentes
+    return estatisticas
+
 def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
                                               ignora_verao=True,
                                               filtro_de_semestre=''):
@@ -139,11 +187,11 @@ def oferta_obrigatorias(OFELST, FLULST, habilitacao='', mostra_opcoes=False):
     obrigatórias.
 
     Argumentos:
-    OFELST -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser o
-              relatório exportado via:
+    OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Lista de
+              Oferta, que deve ser o relatório exportado via:
               SIGRA > Planejamento > Oferta > OFELST
-    FLULST -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser o
-              relatório exportado via:
+    FLULST -- caminho para o arquivo (UTF-16) contendo os dados do Fluxo de um
+              curso, que deve ser o relatório exportado via:
               SIGRA > Planejamento > Fluxo > FLULST
     habilitacao -- parte do nome da habilitação para qual se quer filtrar as
                    turmas reservadas
@@ -318,31 +366,70 @@ def turmas_ofertadas(professores, OFELST):
 CAMINHO = 'relatorios'
 
 
-def acom(arq):
-    return '/'.join([CAMINHO, 'Acompanhamento', arq])
+def acom(arquivo):
+    return '/'.join([CAMINHO, 'Acompanhamento', arquivo])
 
 
-def plan(arq):
-    return '/'.join([CAMINHO, 'Planejamento', arq])
+def plan(arquivo):
+    return '/'.join([CAMINHO, 'Planejamento', arquivo])
 
 
 if __name__ == '__main__':
     # arquivo_de_emails(acom('Alunos/ALUTEL/2017-2.txt'))
 
-    # csv_com_entrada_saida_de_alunos(plan('Curso/CUREGEP/' + f) for f in ['1997.txt', '1998.txt', '2000.txt', '2002.txt', '2004.txt', '2006.txt', '2008.txt', '2010.txt', '2012.txt', '2014.txt', '2016.txt'])
+    # curegeps = [plan('Curso/CUREGEP/' + f) for f in ['1997.txt', '1998.txt',
+    #                                                  '2000.txt', '2002.txt',
+    #                                                  '2004.txt', '2006.txt',
+    #                                                  '2008.txt', '2010.txt',
+    #                                                  '2012.txt', '2014.txt',
+    #                                                  '2016.txt']]
+    # csv_com_entrada_saida_de_alunos(curegeps)
 
-    # print(turmas_ofertadas(['guilherme novaes'], 'relatorios/Planejamento/Oferta/OFELST/2018-1.txt'))
+    # print(turmas_ofertadas(['guilherme novaes'],
+    #                        plan('Oferta/OFELST/2018-1.txt')))
 
     # pretty_fluxo(plan('Fluxo/FLULST/6912.txt'))
 
-    # oferta_obrigatorias('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'mecat')
-    # pretty_grade('relatorios/Planejamento/Oferta/OFELST/2018-1.txt', 'relatorios/Planejamento/Fluxo/FLULST/6912.txt', 'mecat', ['OPT'])
+    # oferta_obrigatorias(plan('Oferta/OFELST/2018-1.txt'),
+    #                     plan('Fluxo/FLULST/6912.txt'), 'mecat')
+    # pretty_grade(plan('Oferta/OFELST/2018-1.txt'),
+    #              plan('Fluxo/FLULST/6912.txt'), 'mecat', ['OPT'])
 
+    # FIS3 = 'HistoricoEscolar/HEDIS/IFD/118044_2017-2.txt'
     # lista = alunos_matriculados_por_semestre(acom('Alunos/ALUREL/949.txt'),
-    #                                          acom('HistoricoEscolar/HEDIS/118044_2017-2.txt'))
+    #                                          acom(FIS3))
     # print(lista)
-    # print(media_de_alunos_matriculados_por_semestre(lista, True, '2014/2 <= {} <= 2017/2'))
 
-    # disciplinas = Disciplina.Listagem(plan('Disciplina/DISLST/2017-2.txt'))  # teste.txt'))
+    # filtro = '2014/2 <= {} <= 2017/2'
+    # print(media_de_alunos_matriculados_por_semestre(lista, True, filtro))
+
+    # disciplinas = Disciplina.Listagem(plan('Disciplina/DISLST/2017-2.txt'))
     # print(disciplinas['113476'])
-    pass
+
+    # periodos = ['2015-1', '2015-2', '2016-1', '2016-2', '2017-1']
+    # oferta = {}
+    # for p in periodos:
+    #     oferta[p] = Oferta.Listagem(plan('Oferta/OFELST/116/{}.txt'.format(p)))
+    # print(oferta)
+
+    LIC = ['116891', '116904', '116840']
+    BCC = ['116912', '116921', '116475']
+    EC = ['207322', '207331']
+    EM = ['167681', '167665']
+    tccs = LIC + BCC + EC + EM
+    estudos_em = ['116556', '116521', '116661', '116629', '116734']
+    topicos_em = ['116297']
+    estagio = ['207314', '207438', '117340']
+    ignore = tccs + estudos_em + topicos_em + estagio
+
+    HEMEN = acom('HistoricoEscolar/HEMEN/2015-1/116.txt')
+    OFELST = plan('Oferta/OFELST/116/2015-1.txt')
+    stats = estatistica_docente_por_semestre(HEMEN, OFELST, ignore)
+    i = 1
+    for p, profs in stats.items():
+        print(p)
+        for p in sorted(profs):
+            print(i, p, profs[p]['creditos'])
+            i += 1
+        print('Media de créditos/professor', sum(p['creditos'] for p in profs.values())/len(profs))
+        print('Media de alunos/turma', sum(p['alunos'] for p in profs.values())/sum(p['turmas'] for p in profs.values()))

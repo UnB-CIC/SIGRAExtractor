@@ -20,16 +20,19 @@ def Listagem(arquivo):
                o relatório exportado via:
                SIGRA > Planejamento > Fluxo > FLULST
     '''
-    def clean_file_content(arquivo):
-        HEADER = r'Universidade de Brasília.*[\s\S]*?' \
-                 'Listagem de Fluxo de Curso - Dados Completos.*[\s\S]*?'
-        FOOTER = r'^ + -{5,}[\s\S]+?lstflulst[\s\S]'
+    def eh_novo_periodo(line):
+        return parse_pre_requisitos(line) is not None
 
-        content = utils.load(arquivo)
-        content = re.sub(HEADER, '', content)
-        content = re.sub(FOOTER, '', content)
+    def eh_tipo(line):
+        return re.search(r'^ +\d{1,3} + (\w{3}) +\w$', line)
 
-        return [line for line in content.split('\n') if line]
+    def parse_credito(line):
+        m = re.search(r'(\d{3})', line)
+        return str(int(m.group(1)))
+
+    def parse_disciplina(line):
+        m = re.search(r'^ +?(\w{1,3}) +? (\d{6}) +? (\w.*)$', line)
+        return m.group(1), m.group(2), m.group(3)
 
     def parse_pre_requisitos(line):
         m = re.search(r'^ +Período: +?(\d{1,3})'
@@ -39,25 +42,21 @@ def Listagem(arquivo):
         else:
             return None
 
-    def eh_novo_periodo(line):
-        return parse_pre_requisitos(line) is not None
-
-    def parse_disciplina(line):
-        m = re.search(r'^ +?(\w{1,3}) +? (\d{6}) +? (\w.*)$', line)
-        return m.group(1), m.group(2), m.group(3)
-
-    def parse_credito(line):
-        m = re.search(r'(\d{3})', line)
-        return str(int(m.group(1)))
-
-    def eh_tipo(line):
-        return re.search(r'^ +\d{1,3} + (\w{3}) +\w$', line)
-
     def parse_tipo(line):
         m = eh_tipo(line)
         return m.group(1)
 
-    content = clean_file_content(arquivo)
+    def preprocess(content):
+        HEADER = r'Universidade de Brasília.*[\s\S]*?' \
+                 'Listagem de Fluxo de Curso - Dados Completos.*[\s\S]*?'
+        FOOTER = r'^ + -{5,}[\s\S]+?lstflulst[\s\S]'
+
+        content = re.sub(HEADER, '', content)
+        content = re.sub(FOOTER, '', content)
+
+        return [line for line in content.split('\n') if line]
+
+    content = preprocess(utils.load(arquivo))
 
     fluxo = {}
     i = 1
@@ -79,18 +78,19 @@ def Listagem(arquivo):
                     if tipo not in periodo:
                         periodo[tipo] = {}
 
-                    i += 5
-                    dept, codigo, nome = parse_disciplina(content[i - 4])
-                    creditos = ':'.join([parse_credito(content[i - 3]),
-                                         parse_credito(content[i - 2]),
-                                         parse_credito(content[i - 1]),
-                                         parse_credito(content[i])])
+                    i += 1
+                    dept, codigo, nome = parse_disciplina(content[i])
+
+                    creditos = utils.creditos2str(parse_credito(content[i + 1]),
+                                                  parse_credito(content[i + 2]),
+                                                  parse_credito(content[i + 3]),
+                                                  parse_credito(content[i + 4]))
                     disciplina = {'nome': utils.capitalize(nome),
                                   'dept': dept,
                                   'créditos': creditos}
 
+                    i += 5
                     pr = ''
-                    i += 1
                     while i < num_lines:
                         if(eh_novo_periodo(content[i]) or
                            eh_tipo(content[i])):

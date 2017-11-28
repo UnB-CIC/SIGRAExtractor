@@ -21,11 +21,10 @@ def Listagem(arquivo):
 
     No caso de pré-requisitos, veja a função utils.parse_pre_requisitos.
     '''
-    def clean_file_content(arquivo):
+    def preprocess(content):
         HEADER = r'Universidade de Brasília.*[\s\S]*?Relação de Disciplinas.*?'
         FOOTER = r'  --+[\s\S].*lstdislst'
 
-        content = utils.load(arquivo)
         content = re.sub(HEADER, '', content)
         content = re.sub(FOOTER, '', content)
 
@@ -50,7 +49,7 @@ def Listagem(arquivo):
         domi = m.group(9)
         return orgao, nivel, nome, rest, creditos, domi
 
-    content = clean_file_content(arquivo)
+    content = preprocess(utils.load(arquivo))
 
     print('Extração de dados.')
     relacao = {}
