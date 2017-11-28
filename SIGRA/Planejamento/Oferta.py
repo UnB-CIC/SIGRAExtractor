@@ -118,7 +118,9 @@ def Listagem(arquivo):
             else:
                 descricao = line[7:36].strip()
                 dia, horario, local = '', '', ''
-                professor, reserva, obs = parse_Prof_Reserva_Obs(line)
+                professor, reserva, obs = '', '', ''
+                if len(line) > 36:
+                    professor, reserva, obs = parse_Prof_Reserva_Obs(line[36:])
 
         aula = {dia: {'horário': horario, 'local': local}} if dia else {}
         return (t, descricao, vagas, turno, aula, professor, reserva, obs)
