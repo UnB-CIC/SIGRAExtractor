@@ -22,34 +22,33 @@ def alunos_matriculados_por_semestre(ALUREL, HEDIS, habilitacoes=[]):
     matriculados.
 
     Argumentos:
-    ALUREL -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser o
-              ser o relatório exportado via:
+    ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos a
+              serem considerados, que deve ser o ser o relatório exportado via:
               SIGRA > Acompanhamento > Alunos > ALUREL
-    HEDIS -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser o
-             relatório exportado via:
+    HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de matrículas
+             da disciplina , que deve ser o relatório exportado via:
              SIGRA > Acompanhamento > Histórico Escolar > HEDIS
     habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                     todas.
                     (default [])
     '''
     alunos = Alunos.Relacao(ALUREL)
+    cursaram = HistoricoEscolar.AlunosQueCursaramDisciplina(HEDIS)
 
     if not habilitacoes:
-        matriculas = set(m for infos in alunos.values()
-                         for periodo in infos['Alunos'].values()
-                         for m in periodo)
-    else:
-        matriculas = set(m for habilitacao in habilitacoes
-                         for periodo in alunos[habilitacao]['Alunos'].values()
-                         for m in periodo)
+        habilitacoes = alunos.keys()
+    matriculas = set(matricula for habilitacao in habilitacoes
+                     for periodo in alunos[habilitacao]['Alunos'].values()
+                     for matricula in periodo)
 
-    matriculados = HistoricoEscolar.AlunosQueCursaramDisciplina(HEDIS)
+    import collections
+    contador = collections.defaultdict(int)
+    for periodo in cursaram:
+        for turma in cursaram[periodo].values():
+            for matricula in turma:
+                if matricula in matriculas:
+                    contador[periodo] += 1
 
-    contador = {}
-    for periodo in matriculados:
-        contador[periodo] = sum(1 for turma in matriculados[periodo]
-                                for m in matriculados[periodo][turma]
-                                if m in matriculas)
     return contador
 
 
@@ -398,7 +397,8 @@ if __name__ == '__main__':
     # FIS3 = 'HistoricoEscolar/HEDIS/IFD/118044_2017-2.txt'
     # lista = alunos_matriculados_por_semestre(acom('Alunos/ALUREL/949.txt'),
     #                                          acom(FIS3))
-    # print(lista)
+    # for p in sorted(lista):
+    #     print(p, lista[p])
 
     # filtro = '2014/2 <= {} <= 2017/2'
     # print(media_de_alunos_matriculados_por_semestre(lista, True, filtro))
@@ -406,30 +406,35 @@ if __name__ == '__main__':
     # disciplinas = Disciplina.Listagem(plan('Disciplina/DISLST/2017-2.txt'))
     # print(disciplinas['113476'])
 
-    # periodos = ['2015-1', '2015-2', '2016-1', '2016-2', '2017-1']
-    # oferta = {}
-    # for p in periodos:
-    #     oferta[p] = Oferta.Listagem(plan('Oferta/OFELST/116/{}.txt'.format(p)))
-    # print(oferta)
 
-    LIC = ['116891', '116904', '116840']
-    BCC = ['116912', '116921', '116475']
-    EC = ['207322', '207331']
-    EM = ['167681', '167665']
-    tccs = LIC + BCC + EC + EM
-    estudos_em = ['116556', '116521', '116661', '116629', '116734']
-    topicos_em = ['116297']
-    estagio = ['207314', '207438', '117340']
-    ignore = tccs + estudos_em + topicos_em + estagio
+    # LIC = ['116891', '116904', '116840']
+    # BCC = ['116912', '116921', '116475']
+    # EC = ['207322', '207331']
+    # EM = ['167681', '167665']
+    # tccs = LIC + BCC + EC + EM
+    # estudos_em = ['116556', '116521', '116661', '116629', '116734']
+    # topicos_em = ['116297']
+    # estagio = ['207314', '207438', '117340']
+    # ignore = tccs + estudos_em + topicos_em + estagio
 
-    HEMEN = acom('HistoricoEscolar/HEMEN/2015-1/116.txt')
-    OFELST = plan('Oferta/OFELST/116/2015-1.txt')
-    stats = estatistica_docente_por_semestre(HEMEN, OFELST, ignore)
-    i = 1
-    for p, profs in stats.items():
-        print(p)
-        for p in sorted(profs):
-            print(i, p, profs[p]['creditos'])
-            i += 1
-        print('Media de créditos/professor', sum(p['creditos'] for p in profs.values())/len(profs))
-        print('Media de alunos/turma', sum(p['alunos'] for p in profs.values())/sum(p['turmas'] for p in profs.values()))
+    # stats = {}
+    # for periodo in ['2015-1', '2015-2', '2016-1', '2016-2', '2017-1']:
+    #     HEMEN = acom('HistoricoEscolar/HEMEN/{}/116.txt'.format(periodo))
+    #     OFELST = plan('Oferta/OFELST/116/{}.txt'.format(periodo))
+    #     stats.update(estatistica_docente_por_semestre(HEMEN, OFELST, ignore))
+    # media_creditos, media_professores, media_alunos, media_turmas = 0, 0, 0, 0
+    # for periodo in sorted(stats):
+    #     print(periodo)
+    #     professores = stats[periodo]
+    #     # for i, prof in enumerate(sorted(professores), start=1):
+    #     #     print(i, prof, professores[prof]['creditos'])
+    #     media_creditos += sum(p['creditos'] for p in professores.values())
+    #     media_professores += len(professores)
+    #     media_alunos += sum(p['alunos'] for p in professores.values())
+    #     media_turmas += sum(p['turmas'] for p in professores.values())
+    #     print('\tcréditos/professor: {0:.2f}'.format(sum(p['creditos'] for p in professores.values())/len(professores)))
+    #     print('\talunos/professor: {0:.2f}'.format(sum(p['alunos'] for p in professores.values())/len(professores)))
+    #     print('\talunos/turma: {0:.2f}'.format(sum(p['alunos'] for p in professores.values())/sum(p['turmas'] for p in professores.values())))
+    # print('\nMedia Geral\n\tcréditos/professor: {0:.2f}'.format(media_creditos/media_professores))
+    # print('\talunos/professor: {0:.2f}'.format(media_alunos/media_professores))
+    # print('\talunos/turma: {0:.2f}'.format(media_alunos/media_turmas))
