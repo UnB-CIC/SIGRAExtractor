@@ -122,33 +122,37 @@ def estatistica_docente_por_semestre(HEMEN, OFELST, ignore=[]):
     estatisticas = {}
     for periodo in estatisticas_de_mencoes:
         docentes = {}
-        for stats in estatisticas_de_mencoes[periodo].values():
-            for codigo in stats:
-                if codigo in ignore:
+        for disciplinas in estatisticas_de_mencoes[periodo].values():
+            for codigo in disciplinas:
+                if disciplinas[codigo]['Nível'] != 'GR':
                     continue
-                if '' in stats[codigo]['Turmas']:
-                    del stats[codigo]['Turmas']['']
-                for turma in stats[codigo]['Turmas']:
-                    if stats[codigo]['Turmas'][turma] == 0:
-                        continue
-                    if codigo in oferta:
-                        creds = utils.str2creditos(oferta[codigo]['créditos'])
-                        num_cred = sum(v for v in creds.values()) - creds['Estudo']
+                if codigo in ignore or codigo not in oferta:
+                    continue
 
-                        if turma in oferta[codigo]['turmas']:
-                            num_alunos = stats[codigo]['Turmas'][turma]
-                            professores = oferta[codigo]['turmas'][turma]['professores'].split(',')
-                            for p in professores:
-                                p = p.strip()
-                                if p not in docentes:
-                                    docentes[p] = {'creditos': 0,
-                                                   'turmas': 0,
-                                                   'alunos': 0}
-                                docentes[p]['creditos'] += num_cred / len(professores)
-                                docentes[p]['turmas'] += 1
-                                docentes[p]['alunos'] += num_alunos
+                for turma in disciplinas[codigo]['Turmas']:
+                    if not turma or disciplinas[codigo]['Turmas'][turma] == 0:
+                        continue
+
+                    creds = utils.str2creditos(oferta[codigo]['créditos'])
+                    num_cred = (sum(v for v in creds.values()) -
+                                creds['Estudo'])
+
+                    if turma in oferta[codigo]['turmas']:
+                        num_alunos = disciplinas[codigo]['Turmas'][turma]
+                        professores = oferta[codigo]['turmas'][turma][
+                            'professores'].split(',')
+                        for p in professores:
+                            if p not in docentes:
+                                docentes[p] = {'creditos': 0,
+                                               'turmas': 0,
+                                               'alunos': 0}
+                            docentes[p]['creditos'] += (num_cred /
+                                                        len(professores))
+                            docentes[p]['turmas'] += 1
+                            docentes[p]['alunos'] += num_alunos
         estatisticas[periodo] = docentes
     return estatisticas
+
 
 def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
                                               ignora_verao=True,
@@ -176,14 +180,11 @@ def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
     num_turmas = 0
     total_matriculados = 0
     for periodo, matriculados in lista_de_semestres.items():
-        if matriculados <= 0:
-            continue
-        if ignora_verao and periodo.endswith('/0'):
-            continue
-        if filtro_de_semestre and filtra(periodo):
-            continue
-        total_matriculados += matriculados
-        num_turmas += 1
+        if (matriculados > 0 and
+                not (ignora_verao and periodo.endswith('/0')) and
+                not (filtro_de_semestre and filtra(periodo))):
+            total_matriculados += matriculados
+            num_turmas += 1
     return total_matriculados / num_turmas if num_turmas else 0
 
 
@@ -225,15 +226,20 @@ def oferta_obrigatorias(OFELST, FLULST, habilitacao='', mostra_opcoes=False):
                                 if habilitacao in r.lower())
 
                 print('\n', codigo, oferta[codigo]['nome'])
-                if habilitacao:
-                    print('\tReserva')
+
+                reservas = []
                 for t in turmas:
                     turma = oferta[codigo]['turmas'][t]
                     for dia in DIAS:
                         for aula in turma['aulas']:
                             if dia in aula:
                                 hora = aula[dia]['horário']
-                                print('\t\t', t, dia, hora)
+                                reservas.append('\t\t{} {} {}'.format(t, dia,
+                                                                      hora))
+                if habilitacao and reservas:
+                    print('\tReserva')
+                    print('\n'.join(reservas))
+
                 if mostra_opcoes:
                     if habilitacao:
                         print('\tOutros')
@@ -411,7 +417,6 @@ if __name__ == '__main__':
 
     # disciplinas = Disciplina.Listagem(plan('Disciplina/DISLST/2017-2.txt'))
     # print(disciplinas['113476'])
-
 
     # LIC = ['116891', '116904', '116840']
     # BCC = ['116912', '116921', '116475']
