@@ -152,7 +152,7 @@ def estatistica_docente_por_semestre(HEMEN, OFELST, ignore=[]):
 
 def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
                                               ignora_verao=True,
-                                              filtro_de_semestre=''):
+                                              filtro_de_semestre=None):
     '''Retorna a média de alunos matriculados por semestre.
 
     Argumentos:
@@ -161,9 +161,9 @@ def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
                     (default True)
     filtro_de_semestre -- filtro de semestres a serem considerados. Por
                           exemplo, o filtro para considerar apenas períodos
-                          entre 2014/2 e 2016/2 seria
-                          '2014/2 <= {periodo} <= 2016/2'
-                          (default '')
+                          entre 2014/2 (inclusive) e 2016/2 (exclusive) seria
+                          '2014/2 <= {periodo} < 2016/2'
+                          (default None)
     '''
     def entre_aspas(matchobj):
         return '\'{}\''.format(matchobj.group(0))
@@ -173,17 +173,18 @@ def media_de_alunos_matriculados_por_semestre(lista_de_semestres,
                    filtro_de_semestre.format(periodo))
         return not eval(f)
 
-    n = 0
-    total = 0
+    num_turmas = 0
+    total_matriculados = 0
     for periodo, matriculados in lista_de_semestres.items():
-        if (matriculados > 0):
-            if ignora_verao and periodo.endswith('/0'):
-                continue
-            if filtro_de_semestre and filtra(periodo):
-                continue
-            total += matriculados
-            n += 1
-    return total / n if n else 0
+        if matriculados <= 0:
+            continue
+        if ignora_verao and periodo.endswith('/0'):
+            continue
+        if filtro_de_semestre and filtra(periodo):
+            continue
+        total_matriculados += matriculados
+        num_turmas += 1
+    return total_matriculados / num_turmas if num_turmas else 0
 
 
 def oferta_obrigatorias(OFELST, FLULST, habilitacao='', mostra_opcoes=False):
