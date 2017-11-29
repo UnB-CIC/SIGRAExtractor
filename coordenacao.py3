@@ -63,7 +63,7 @@ def arquivo_de_emails(ALUTEL, contact='{nome} <{email}>',
               SIGRA > Acompanhamento > Alunos > ALUTEL
     contact -- formatação de cada registro.
                (default nome <email>)
-    arquivo -- arquivo onde gravas a lista de e-mails.
+    arquivo -- arquivo onde gravar a lista de e-mails.
     '''
     relacao = Alunos.Contatos(ALUTEL)
     emails = [contact.format(nome=info['nome'], email=info['e-mail'],
@@ -74,27 +74,31 @@ def arquivo_de_emails(ALUTEL, contact='{nome} <{email}>',
         f.write('\n'.join(email for email in sorted(emails)))
 
 
-def csv_com_entrada_saida_de_alunos(CUREGEPs, out_file='stats.csv'):
+def csv_com_entrada_saida_de_alunos(CUREGEPs, arquivo='alunos.csv',
+                                    separador=';'):
     '''Gera um arquivo com a as informações de entrada/saída de alunos do curso
-    por semestre.
+    por semestre, como uma listagem CSV.
 
     Argumentos:
     CUREGEPs -- lista com os caminhos para os arquivos (UTF-16) contendo os
-                dados, que devem ser o relatório exportado via:
+                as informações sobre o curso, que devem ser o relatório
+                exportado via:
                 SIGRA > Planejamento > Curso > CUREGEP
-    out_file -- arquivo onde gravar os dados.
+    arquivo -- caminho para o arquivo onde gravar os dados.
+    separador -- separador de valores.
+                 (default ;)
     '''
     stats = Curso.Estatisticas(CUREGEPs)
     col_names = sorted(next(iter(stats.values())).keys())
 
-    with open(out_file, 'w') as f:
-        f.write(';'.join(['Ano'] + col_names) + '\n')
+    with open(arquivo, 'w') as f:
+        f.write('{}\n'.format(separador.join(['Ano'] + col_names)))
 
         for periodo in sorted(stats.keys()):
             f.write(periodo)
             for k in col_names:
-                t = stats[periodo][k]['Mas'] + stats[periodo][k]['Fem']
-                f.write(';' + str(t))
+                num_alunos = sum(int(n) for n in stats[periodo][k].values())
+                f.write('{}{}'.format(separador, num_alunos))
             f.write('\n')
 
 
