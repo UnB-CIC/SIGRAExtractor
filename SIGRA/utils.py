@@ -5,7 +5,7 @@
 #
 # Funções de utilitárias.
 
-from re import findall
+import re
 
 
 def capitalize(string):
@@ -20,11 +20,11 @@ def creditos2str(teoria, pratica, extensao, estudo):
                                 int(estudo))
 
 
-def load(arquivo):
-    '''Lê o conteúdo do arquivo (UTF-16) dado e o retorna.'''
+def load(arquivo, encoding='utf-16'):
+    '''Lê o conteúdo do arquivo dado e o retorna.'''
     print('Leitura dos dados de {}.'.format(arquivo))
 
-    with open(arquivo, encoding='utf-16') as f:
+    with open(arquivo, encoding=encoding) as f:
         content = f.read()
 
     return content
@@ -43,7 +43,7 @@ def parse_pre_requisitos(pre_reqs):
     '''
     pre_requisitos = []
     for opcoes in pre_reqs.split('OU'):
-        pre_requisitos.append(findall(r'\d{6}', opcoes))
+        pre_requisitos.append(re.findall(r'\d{6}', opcoes))
     return [p for p in pre_requisitos if p]
 
 
