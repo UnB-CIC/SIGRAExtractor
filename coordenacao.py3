@@ -107,9 +107,9 @@ def estatistica_docente_por_semestre(HEMEN, OFELST, ignore=[]):
     de oferta, retornando um dicionário com a informações.
 
     Argumentos:
-    HEMEN -- caminho para o arquivo (UTF-16) contendo os dados das menções, que
-             deve ser o relatório exportado via:
-             SIGRA > Acompanhamento > Histórico Escolar > HEDIS
+    HEMEN -- caminho para o arquivo (UTF-16) contendo o histórico de menções,
+             que deve ser o relatório exportado via:
+             SIGRA > Acompanhamento > Histórico Escolar > HEMEN
     OFELST -- caminho para o arquivo (UTF-16) contendo os dados da oferta, que
               deve ser o relatório exportado via:
               SIGRA > Planejamento > Oferta > OFELST

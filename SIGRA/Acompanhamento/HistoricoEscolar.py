@@ -37,6 +37,13 @@ def AlunosQueCursaramDisciplina(arquivo):
 
 
 def EstatisticaDeMencoes(arquivo):
+    '''Extrai as informações do histórico de menções de disciplinas.
+
+    Argumentos:
+    arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
+               o relatório exportado via:
+               SIGRA > Acompanhamento > Histórico Escolar > HEMEN
+    '''
     def preprocess(content):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
                  'Histórico Escolar: Estatística de Menções?'
@@ -87,7 +94,7 @@ def EstatisticaDeMencoes(arquivo):
             depto = parse_departamento(content[i + 2])
             codigo = parse_codigo(content[i + 4])
             nivel = parse_nivel(content[i + 6])
-            nome = parse_nome(content[i + 7])
+            # nome = parse_nome(content[i + 7])
             turma = parse_turma(content[i + 8])
 
             i += 9
@@ -95,7 +102,7 @@ def EstatisticaDeMencoes(arquivo):
                 i += 1
 
             if i < num_lines:
-                total_mencoes = parse_total_de_mencoes(content[i])
+                mencoes = parse_total_de_mencoes(content[i])
 
                 if periodo not in relacao:
                     relacao[periodo] = {depto: {}}
@@ -105,8 +112,7 @@ def EstatisticaDeMencoes(arquivo):
                                                        'Turmas': {}}
 
                 num_turmas += 1
-                relacao[periodo][depto][codigo][
-                    'Turmas'][turma] = total_mencoes
+                relacao[periodo][depto][codigo]['Turmas'][turma] = mencoes
 
         i += 1
 
