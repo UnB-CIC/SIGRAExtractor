@@ -53,23 +53,24 @@ def alunos_matriculados_por_semestre(ALUREL, HEDIS, habilitacoes=[]):
 
 
 def arquivo_de_emails(ALUTEL, contact='{nome} <{email}>',
-                      out_file='emails.txt'):
+                      arquivo='emails.txt'):
     '''Gera um arquivo com a lista de e-mails dos alunos regulares de um curso.
 
     Argumentos:
-    ALUTEL -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser o
-              relatório exportado via:
+    ALUTEL -- caminho para o arquivo (UTF-16) contendo a listagem das
+              informações de contatos dos alunos, que deve ser o relatório
+              exportado via:
               SIGRA > Acompanhamento > Alunos > ALUTEL
-    contact -- formatação de cada registro
+    contact -- formatação de cada registro.
                (default nome <email>)
-    out_file -- arquivo onde gravas a lista de e-mails.
+    arquivo -- arquivo onde gravas a lista de e-mails.
     '''
     relacao = Alunos.Contatos(ALUTEL)
     emails = [contact.format(nome=info['nome'], email=info['e-mail'],
                              telefone=info['telefone'])
               for info in relacao.values()]
 
-    with open(out_file, 'w') as f:
+    with open(arquivo, 'w') as f:
         f.write('\n'.join(email for email in sorted(emails)))
 
 
