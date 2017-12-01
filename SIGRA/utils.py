@@ -14,6 +14,13 @@ def capitalize(string):
     return ' '.join(s.capitalize() for s in string.split())
 
 
+def carga_docente(creditos_str):
+    ''' Retorna a quantidade de carga docente referente a distribuição de
+    créditos de uma disciplina.'''
+    creditos = str2creditos(creditos_str)
+    return sum(v for v in creditos.values()) - creditos['Estudo']
+
+
 def creditos2str(teoria, pratica, extensao, estudo):
     '''Retorna um string com a representação dos créditos de uma disciplina.'''
     return '{}:{}:{}:{}'.format(int(teoria), int(pratica), int(extensao),
