@@ -4,7 +4,6 @@
 #
 # Funções úteis para coordenação.
 
-
 import re
 
 from SIGRA.Acompanhamento import Alunos
@@ -56,15 +55,16 @@ class Discentes():
         return contador
 
     @staticmethod
-    def media_de_matriculados_por_semestre(lista_de_semestres,
+    def media_de_matriculados_por_semestre(matriculados_por_semestre,
                                            ignora_verao=True,
                                            filtro_de_semestre=None):
         '''Retorna a média de alunos matriculados por semestre.
 
         Argumentos:
-        lista_de_semestres -- lista de semestres letivos a serem considerados
-                              (veja o método
-                              Discentes.matriculados_por_semestre).
+        matriculados_por_semestre -- dicionário de semestres letivos: alunos
+                                     matriculados a serem considerados (veja o
+                                     método
+                                     Discentes.matriculados_por_semestre).
         ignora_verao -- indica se deve ou não ignorar semestre de verão
                         (default True)
         filtro_de_semestre -- filtro de semestres a serem considerados. Por
@@ -83,17 +83,21 @@ class Discentes():
 
         num_turmas = 0
         total_matriculados = 0
-        for periodo, matriculados in lista_de_semestres.items():
-            if (matriculados > 0 and
-                    not (ignora_verao and periodo.endswith('/0')) and
-                    not (filtro_de_semestre and filtra(periodo))):
-                total_matriculados += matriculados
-                num_turmas += 1
+        for periodo, matriculados in matriculados_por_semestre.items():
+            if matriculados < 1:
+                continue
+            if ignora_verao and periodo.endswith('/0'):
+                continue
+            if filtro_de_semestre and filtra(periodo):
+                continue
+            total_matriculados += matriculados
+            num_turmas += 1
         return total_matriculados / num_turmas if num_turmas else 0
 
     @staticmethod
     def contatos(ALUTEL, formato='{nome} <{email}>', arquivo='emails.txt'):
-        '''Gera um arquivo com a lista de e-mails dos alunos regulares de um curso.
+        '''Gera um arquivo com a lista de e-mails dos alunos regulares de um
+        curso.
 
         Argumentos:
         ALUTEL -- caminho para o arquivo (UTF-16) contendo a listagem das
@@ -141,21 +145,21 @@ class Discentes():
 
 
 class Docente():
-    def estatistica_por_semestre(HEMEN, OFELST, ignore=[]):
+    def estatistica_por_semestre(HEEME, OFELST, ignore=[]):
         '''Cruza as informações do histórico de menções de um semestre com a
         lista de oferta, retornando um dicionário com a informações.
 
         Argumentos:
-        HEMEN -- caminho para o arquivo (UTF-16) contendo o histórico de
+        HEEME -- caminho para o arquivo (UTF-16) contendo o histórico de
                  menções, que deve ser o relatório exportado via:
-                 SIGRA > Acompanhamento > Histórico Escolar > HEMEN
+                 SIGRA > Acompanhamento > Histórico Escolar > HEEME
         OFELST -- caminho para o arquivo (UTF-16) contendo os dados da oferta,
                   que deve ser o relatório exportado via:
                   SIGRA > Planejamento > Oferta > OFELST
         ignore -- lista com código de disciplinas que devem ser ignoradas na
                   contabilização (como '167681' -> Trabalho de Graduação 1).
         '''
-        estatisticas_de_mencoes = HistoricoEscolar.EstatisticaDeMencoes(HEMEN)
+        estatisticas_de_mencoes = HistoricoEscolar.EstatisticaDeMencoes(HEEME)
         oferta = Oferta.Listagem(OFELST)
 
         estatisticas = {}
@@ -173,8 +177,8 @@ class Docente():
                                 disciplinas[codigo]['Turmas'][turma] == 0):
                             continue
 
-                        num_cred = utils.carga_docente(oferta[codigo][
-                                                       'créditos'])
+                        num_cred = utils.Creditos.total(oferta[codigo][
+                                                        'créditos'])
 
                         if turma in oferta[codigo]['turmas']:
                             num_alunos = disciplinas[codigo]['Turmas'][turma]
@@ -234,7 +238,7 @@ class Terminal():
 
         print()
         for p, periodo in fluxo.items():
-            num_cred = sum(utils.carga_docente(d['créditos'])
+            num_cred = sum(utils.Creditos.total(d['créditos'])
                            for disciplinas in periodo.values()
                            for d in disciplinas.values())
             print('{} - ({} créditos)'.format(p, num_cred))
@@ -313,9 +317,7 @@ class Terminal():
                 print(AsciiTable(table_data).table)
             except Exception:
                 for row in table_data:
-                    for cell in row:
-                        print('{0: <12}'.format(cell), end='')
-                    print()
+                    print(''.join('{0: <12}'.format(cell) for cell in row))
 
     @staticmethod
     def oferta_obrigatorias(OFELST, FLULST, habilitacao='',
@@ -382,101 +384,3 @@ class Terminal():
                                     if dia in turma['aulas']:
                                         hora = turma['aulas'][dia]['horário']
                                         print('\t\t', t, dia, hora)
-
-
-def acom(arquivo):
-    return '/'.join(['relatorios', 'Acompanhamento', arquivo])
-
-
-def plan(arquivo):
-    return '/'.join(['relatorios', 'Planejamento', arquivo])
-
-
-if __name__ == '__main__':
-    # Listar a quantidade de alunos matriculados por semestre
-    relacao_de_alunos = acom('Alunos/ALUREL/949.txt')
-    disciplina = acom('HistoricoEscolar/HEDIS/IFD/118044_2017-2.txt')
-    lista = Discentes.matriculados_por_semestre(relacao_de_alunos, disciplina)
-    # for periodo in sorted(lista):
-    #     print(periodo, lista[periodo])
-
-    # Exibe a média de alunos (de uma disciplina)
-    filtro = '2014/2 <= {} <= 2017/2'
-    print(Discentes.media_de_matriculados_por_semestre(lista, True, filtro))
-
-    # Gerar arquivo com contatos para lista de e-mails.
-    lista_de_contatos = Discentes.contatos(acom('Alunos/ALUTEL/2017-2.txt'))
-    # with open('lista_de_emails.txt', 'w') as f:
-    #     f.write('\n'.join(contato for contato in sorted(lista_de_contatos)))
-
-    # Gerar arquivo com estatísticas de entrada/saída de alunos
-    arquivos = [plan('Curso/CUREGEP/' + f) for f in ['1997.txt', '1998.txt',
-                                                     '2000.txt', '2002.txt',
-                                                     '2004.txt', '2006.txt',
-                                                     '2008.txt', '2010.txt',
-                                                     '2012.txt', '2014.txt',
-                                                     '2016.txt']]
-    Discentes.csv_com_entrada_saida_de_alunos(arquivos)
-
-    # Exibe as disciplinas no fluxo.
-    Terminal.fluxo(plan('Fluxo/FLULST/6912.txt'))
-
-    # Exibe a oferta de disciplinas obrigatórias de um fluxo.
-    Terminal.oferta_obrigatorias(plan('Oferta/OFELST/2018-1.txt'),
-                                 plan('Fluxo/FLULST/6912.txt'), 'mecat')
-
-    # Exibe a grade horária das disciplinas do fluxo.
-    Terminal.grade(plan('Oferta/OFELST/2018-1.txt'),
-                   plan('Fluxo/FLULST/6912.txt'), 'mecat', ['OPT'])
-
-    # Gerar uma lista com as turmas ofertadas por um conjunto de docentes.
-    docentes = ['marcos fagundes']
-    oferta = plan('Oferta/OFELST/2017-2.txt')
-    lista = Docente.turmas_ofertadas(docentes, oferta)
-    print(lista)
-
-    # Listar indicadores.
-    disciplinas = Disciplina.Listagem(plan('Disciplina/DISLST/2017-2.txt'))
-    print(disciplinas['113476'])
-
-    LIC = ['116891', '116904', '116840']
-    BCC = ['116912', '116921', '116475']
-    EC = ['207322', '207331']
-    EM = ['167681', '167665']
-    tccs = LIC + BCC + EC + EM
-    estudos_em = ['116556', '116521', '116661', '116629', '116734']
-    topicos_em = ['116297']
-    estagio = ['207314', '207438', '117340']
-    ignore = tccs + estudos_em + topicos_em + estagio
-
-    stats = {}
-    for periodo in ['2015-1', '2015-2', '2016-1', '2016-2', '2017-1']:
-        HEMEN = acom('HistoricoEscolar/HEMEN/{}/116.txt'.format(periodo))
-        OFELST = plan('Oferta/OFELST/116/{}.txt'.format(periodo))
-        stats.update(Docente.estatistica_por_semestre(HEMEN, OFELST, ignore))
-    media_creditos, media_professores, media_alunos, media_turmas = 0, 0, 0, 0
-    for periodo in sorted(stats):
-        print(periodo)
-        professores = stats[periodo]
-        # for i, prof in enumerate(sorted(professores), start=1):
-        #     print(i, prof, professores[prof]['creditos'])
-        media_creditos += sum(p['creditos'] for p in professores.values())
-        media_professores += len(professores)
-        media_alunos += sum(p['alunos'] for p in professores.values())
-        media_turmas += sum(p['turmas'] for p in professores.values())
-
-        creds = sum(p['creditos'] for p in professores.values())
-        alunos = sum(p['alunos'] for p in professores.values())
-        turmas = sum(p['turmas'] for p in professores.values())
-        profs = len(professores)
-
-        print('\tcréditos/professor: {0:.2f}'.format(creds / profs))
-        print('\talunos/professor: {0:.2f}'.format(alunos / profs))
-        print('\talunos/turma: {0:.2f}'.format(alunos / turmas))
-
-    creds = media_creditos / media_professores
-    alunos = media_alunos / media_professores
-    turmas = media_alunos / media_turmas
-    print('\nMedia Geral\n\tcréditos/professor: {0:.2f}'.format(creds))
-    print('\talunos/professor: {0:.2f}'.format(alunos))
-    print('\talunos/turma: {0:.2f}'.format(turmas))

@@ -41,7 +41,7 @@ def Listagem(arquivo):
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
         m = re.search(CREDITOS, line)
-        return utils.creditos2str(m.group(1), m.group(2),
+        return utils.Creditos.to_string(m.group(1), m.group(2),
                                   m.group(3), m.group(4))
 
     def parse_disciplina(line):
@@ -57,7 +57,8 @@ def Listagem(arquivo):
         reserva = {}
         obs = ''
 
-        partes = [p.strip() for p in line.split('   ') if p.strip() and '0' not in p]
+        partes = [p.strip() for p in line.split('   ') if p.strip()]
+
         for parte in partes:
             m = re.search(r'^(.*)/(\d+)$', parte)
             if m:

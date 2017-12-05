@@ -8,23 +8,37 @@
 import re
 
 
+class Creditos():
+    @staticmethod
+    def total(creditos_str, ignora_estudos=True):
+        ''' Retorna a quantidade total de créditos de uma disciplina.'''
+        creditos = Creditos.from_string(creditos_str)
+        qtde = sum(v for v in creditos.values())
+        if ignora_estudos:
+            qtde -= creditos['Estudo']
+        return qtde
+
+    @staticmethod
+    def from_string(string):
+        '''Retorna um dicionário contendo a separação de créditos por tipo.'''
+        creditos = string.split(':')
+        return {'Teoria': int(creditos[0]),
+                'Prática': int(creditos[1]),
+                'Extensão': int(creditos[2]),
+                'Estudo': int(creditos[3])}
+
+    @staticmethod
+    def to_string(teoria, pratica, extensao, estudo):
+        '''Retorna um string com a representação dos créditos de uma
+        disciplina.'''
+        return '{}:{}:{}:{}'.format(int(teoria), int(pratica), int(extensao),
+                                    int(estudo))
+
+
 def capitalize(string):
     '''Retorna o string dado com todas as palavras iniciando com letra
     maiúscula.'''
     return ' '.join(s.capitalize() for s in string.split())
-
-
-def carga_docente(creditos_str):
-    ''' Retorna a quantidade de carga docente referente a distribuição de
-    créditos de uma disciplina.'''
-    creditos = str2creditos(creditos_str)
-    return sum(v for v in creditos.values()) - creditos['Estudo']
-
-
-def creditos2str(teoria, pratica, extensao, estudo):
-    '''Retorna um string com a representação dos créditos de uma disciplina.'''
-    return '{}:{}:{}:{}'.format(int(teoria), int(pratica), int(extensao),
-                                int(estudo))
 
 
 def load(arquivo, encoding='utf-16'):
@@ -52,12 +66,3 @@ def parse_pre_requisitos(pre_reqs):
     for opcoes in pre_reqs.split('OU'):
         pre_requisitos.append(re.findall(r'\d{6}', opcoes))
     return [p for p in pre_requisitos if p]
-
-
-def str2creditos(string):
-    '''Retorna um dicionário contendo a separação de créditos por tipo.'''
-    creditos = string.split(':')
-    return {'Teoria': int(creditos[0]),
-            'Prática': int(creditos[1]),
-            'Extensão': int(creditos[2]),
-            'Estudo': int(creditos[3])}

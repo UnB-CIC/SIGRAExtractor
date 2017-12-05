@@ -81,7 +81,7 @@ def Listagem(arquivo):
                     i += 1
                     dept, codigo, nome = parse_disciplina(content[i])
 
-                    creditos = utils.creditos2str(parse_credito(content[i + 1]),
+                    creditos = utils.Creditos.to_string(parse_credito(content[i + 1]),
                                                   parse_credito(content[i + 2]),
                                                   parse_credito(content[i + 3]),
                                                   parse_credito(content[i + 4]))

@@ -44,8 +44,10 @@ def Listagem(arquivo):
         nivel = m.group(2).strip()
         nome = utils.capitalize(m.group(3).strip())
         rest = m.group(4).strip()
-        creditos = utils.creditos2str(m.group(5).strip(), m.group(6).strip(),
-                                      m.group(7).strip(), m.group(8).strip())
+        creditos = utils.Creditos.to_string(m.group(5).strip(),
+                                            m.group(6).strip(),
+                                            m.group(7).strip(),
+                                            m.group(8).strip())
         domi = m.group(9)
         return orgao, nivel, nome, rest, creditos, domi
 

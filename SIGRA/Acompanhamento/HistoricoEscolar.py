@@ -42,7 +42,7 @@ def EstatisticaDeMencoes(arquivo):
     Argumentos:
     arquivo -- caminho para o arquivo (UTF-16) contendo os dados, que deve ser
                o relatório exportado via:
-               SIGRA > Acompanhamento > Histórico Escolar > HEMEN
+               SIGRA > Acompanhamento > Histórico Escolar > HEEME
     '''
     def preprocess(content):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
