@@ -7,10 +7,10 @@
 
 
 import re
-from SIGRA import utils
+from sigra import utils
 
 
-def Listagem(arquivo):
+def listagem(arquivo):
     '''Retorna um dicionário com as informações de cada disciplina
     ofertada, extraindo as informações do arquivo de entrada.
 
@@ -42,7 +42,7 @@ def Listagem(arquivo):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
         m = re.search(CREDITOS, line)
         return utils.Creditos.to_string(m.group(1), m.group(2),
-                                  m.group(3), m.group(4))
+                                        m.group(3), m.group(4))
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
@@ -130,7 +130,6 @@ def Listagem(arquivo):
 
     oferta = {}
 
-    print('Extração de dados.')
     i = 1
     num_lines = len(content)
     while i < num_lines:
@@ -207,6 +206,7 @@ def Listagem(arquivo):
 
     num_disciplinas = len(oferta)
     num_turmas = sum(len(oferta[codigo]['turmas']) for codigo in oferta)
-    print('{} disciplinas, {} turmas'.format(num_disciplinas, num_turmas))
+    print('{} disciplinas ({} turmas) ofertadas.'.format(num_disciplinas,
+                                                         num_turmas))
 
     return oferta

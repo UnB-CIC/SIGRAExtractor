@@ -43,8 +43,10 @@ def capitalize(string):
 
 def load(arquivo, encoding='utf-16'):
     '''Lê o conteúdo do arquivo dado e o retorna.'''
-    print('Leitura de {}.'.format(arquivo))
+    if not arquivo.endswith('.txt'):
+        arquivo += '.txt'
 
+    print('Leitura de {}.'.format(arquivo))
     with open(arquivo, encoding=encoding) as f:
         content = f.read()
 

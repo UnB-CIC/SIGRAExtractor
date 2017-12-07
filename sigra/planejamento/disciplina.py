@@ -1,16 +1,15 @@
 #  -*- coding: utf-8 -*-
-#    @package: Disciplina.py
+#    @package: disciplina.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções de extração de informações de relatórios de Planejamento do Sistema
 # de Graduação da UnB (SIGRA).
 
 import re
+from sigra import utils
 
-from SIGRA import utils
 
-
-def Listagem(arquivo):
+def listagem(arquivo):
     '''Retorna um dicionário com as informações de cada disciplina
     ofertada, extraindo as informações do arquivo de entrada.
 
@@ -53,7 +52,6 @@ def Listagem(arquivo):
 
     content = preprocess(utils.load(arquivo))
 
-    print('Extração de dados.')
     relacao = {}
     i = 1
     num_lines = len(content)
@@ -90,5 +88,5 @@ def Listagem(arquivo):
 
         i += 1
 
-    print('{} disciplinas.'.format(len(relacao)))
+    print('{} disciplinas listadas.'.format(len(relacao)))
     return relacao

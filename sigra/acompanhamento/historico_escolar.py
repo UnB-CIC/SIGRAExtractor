@@ -1,5 +1,5 @@
 #  -*- coding: utf-8 -*-
-#    @package: HistoricoEscolar.py
+#    @package: historico_escolar.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções de extração de informações de relatórios de Acompanhamento do Sistema
@@ -7,10 +7,10 @@
 
 import re
 
-from SIGRA import utils
+from sigra import utils
 
 
-def AlunosQueCursaramDisciplina(arquivo):
+def alunos_que_cursaram_disciplina(arquivo):
     '''Extrai as informações dos alunos que cursaram determinada disciplina.
 
     Argumentos:
@@ -20,7 +20,6 @@ def AlunosQueCursaramDisciplina(arquivo):
     '''
     content = utils.load(arquivo)
 
-    print('Extração de dados.')
     num_registros = 0
     REGEX = r'(\d\d/\d{3,}) +(\d{4}/\d+) +(\w+) +(\w\w) {2,}(.*)[\s\S]'
     relacao = {}
@@ -32,11 +31,11 @@ def AlunosQueCursaramDisciplina(arquivo):
         relacao[periodo][turma][matricula] = {'Nome': nome, 'Menção': mencao}
         num_registros += 1
 
-    print('{} registros.'.format(num_registros))
+    print('Disciplina cursada por {} alunos.'.format(num_registros))
     return relacao
 
 
-def EstatisticaDeMencoes(arquivo):
+def estatisticas_de_mencoes(arquivo):
     '''Extrai as informações do histórico de menções de disciplinas.
 
     Argumentos:
@@ -83,7 +82,6 @@ def EstatisticaDeMencoes(arquivo):
 
     content = preprocess(utils.load(arquivo))
 
-    print('Extração de dados.')
     relacao = {}
     num_disciplinas, num_turmas = 0, 0
     i = 1
@@ -116,5 +114,6 @@ def EstatisticaDeMencoes(arquivo):
 
         i += 1
 
-    print('{} disciplinas, {} turmas.'.format(num_disciplinas, num_turmas))
+    print('Estatística de menções para '
+          '{} disciplinas ({} turmas).'.format(num_disciplinas, num_turmas))
     return relacao

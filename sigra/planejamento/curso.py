@@ -7,11 +7,10 @@
 
 
 import re
+from sigra import utils
 
-from SIGRA import utils
 
-
-def Estatisticas(arquivos):
+def estatisticas(arquivos):
     '''Retorna um dicionário com as informações de entrada/saída de alunos
     para cada período no(s) arquivo(s) de entrada.
 
@@ -25,7 +24,7 @@ def Estatisticas(arquivos):
         return re.search(REGEX, line)
 
     def parse_periodos(line):
-        return [p for p in lista_periodos(line).groups()]
+        return list(lista_periodos(line).groups())
 
     def lista_estatistica(line):
         REGEX = r'^ +\d+  (.*?)  +(\d+) +(\d+) +(\d+) +(\d+)' \
@@ -33,7 +32,7 @@ def Estatisticas(arquivos):
         return re.search(REGEX, line)
 
     def parse_estatistica(line):
-        return [e for e in lista_estatistica(line).groups()]
+        return list(lista_estatistica(line).groups())
 
     stats = {}
     for arquivo in arquivos:
@@ -50,16 +49,16 @@ def Estatisticas(arquivos):
         while not lista_estatistica(content[i]):
             i += 1
         while lista_estatistica(content[i]):
-            stat = parse_estatistica(content[i])
+            estatistica = parse_estatistica(content[i])
 
             s = 1
             for p in periodos:
-                stats[p][stat[0]] = {'Mas': stat[s],
-                                     'Fem': stat[s + 1]}
+                stats[p][estatistica[0]] = {'Mas': estatistica[s],
+                                            'Fem': estatistica[s + 1]}
                 s += 2
 
             i += 1
 
-    print('{} semestres.'.format(len(stats)))
+    print('Estatísticas de {} semestres.'.format(len(stats)))
 
     return stats

@@ -1,5 +1,5 @@
 #  -*- coding: utf-8 -*-
-#    @package: Fluxo.py
+#    @package: fluxo.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções de extração de informações de relatórios de planejamento do fluxo do
@@ -7,11 +7,10 @@
 
 
 import re
+from sigra import utils
 
-from SIGRA import utils
 
-
-def Listagem(arquivo):
+def listagem(arquivo):
     '''Retorna um dicionário com as informações das disciplinas listadas no
     fluxo em cada período, extraindo as informações do arquivo de entrada.
 
@@ -81,10 +80,14 @@ def Listagem(arquivo):
                     i += 1
                     dept, codigo, nome = parse_disciplina(content[i])
 
-                    creditos = utils.Creditos.to_string(parse_credito(content[i + 1]),
-                                                  parse_credito(content[i + 2]),
-                                                  parse_credito(content[i + 3]),
-                                                  parse_credito(content[i + 4]))
+                    creditos = utils.Creditos.to_string(parse_credito(content[
+                                                                      i + 1]),
+                                                        parse_credito(content[
+                                                                      i + 2]),
+                                                        parse_credito(content[
+                                                                      i + 3]),
+                                                        parse_credito(content[
+                                                                      i + 4]))
                     disciplina = {'nome': utils.capitalize(nome),
                                   'dept': dept,
                                   'créditos': creditos}
@@ -92,8 +95,7 @@ def Listagem(arquivo):
                     i += 5
                     pr = ''
                     while i < num_lines:
-                        if(eh_novo_periodo(content[i]) or
-                           eh_tipo(content[i])):
+                        if(eh_novo_periodo(content[i]) or eh_tipo(content[i])):
                             i -= 1
                             break
 
@@ -106,7 +108,8 @@ def Listagem(arquivo):
                             pr += ' ' + content[i].strip()
                             i += 1
 
-                    disciplina['pré-requisitos'] = utils.parse_pre_requisitos(pr)
+                    pr = utils.parse_pre_requisitos(pr)
+                    disciplina['pré-requisitos'] = pr
 
                     periodo[tipo][codigo] = disciplina
 

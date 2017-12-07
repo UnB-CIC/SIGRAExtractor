@@ -1,18 +1,18 @@
 #  -*- coding: utf-8 -*-
-#    @package: coordenacao.py3
+#    @package: coordenacao.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções úteis para coordenação.
 
 import re
 
-from SIGRA.Acompanhamento import Alunos
-from SIGRA.Acompanhamento import HistoricoEscolar
-from SIGRA.Planejamento import Curso
-from SIGRA.Planejamento import Disciplina
-from SIGRA.Planejamento import Fluxo
-from SIGRA.Planejamento import Oferta
-from SIGRA import utils
+from sigra import utils
+from sigra.acompanhamento import alunos as ac_alunos
+from sigra.acompanhamento import historico_escolar as ac_he
+from sigra.planejamento import curso as pl_curso
+from sigra.planejamento import disciplina as pl_disciplina
+from sigra.planejamento import fluxo as pl_fluxo
+from sigra.planejamento import oferta as pl_oferta
 
 
 class Discentes():
@@ -26,17 +26,17 @@ class Discentes():
         ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
                   a serem considerados, que deve ser o ser o relatório
                   exportado via:
-                  SIGRA > Acompanhamento > Alunos > ALUREL
+                  sigra > Acompanhamento > Alunos > ALUREL
         HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de
                  matrículas da disciplina , que deve ser o relatório exportado
                  via:
-                 SIGRA > Acompanhamento > Histórico Escolar > HEDIS
+                 sigra > Acompanhamento > Histórico Escolar > HEDIS
         habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                         todas.
                         (default [])
         '''
-        alunos = Alunos.Relacao(ALUREL)
-        cursaram = HistoricoEscolar.AlunosQueCursaramDisciplina(HEDIS)
+        alunos = ac_alunos.relacao(ALUREL)
+        cursaram = ac_he.alunos_que_cursaram_disciplina(HEDIS)
 
         if not habilitacoes:
             habilitacoes = alunos.keys()
@@ -103,12 +103,12 @@ class Discentes():
         ALUTEL -- caminho para o arquivo (UTF-16) contendo a listagem das
                   informações de contatos dos alunos, que deve ser o relatório
                   exportado via:
-                  SIGRA > Acompanhamento > Alunos > ALUTEL
+                  sigra > Acompanhamento > Alunos > ALUTEL
         formato -- formatação de cada registro.
                    (default nome <email>)
         arquivo -- arquivo onde gravar a lista de e-mails.
         '''
-        relacao = Alunos.Contatos(ALUTEL)
+        relacao = ac_alunos.contatos(ALUTEL)
         return [formato.format(nome=info['nome'], email=info['e-mail'],
                                telefone=info['telefone'])
                 for info in relacao.values()]
@@ -123,13 +123,13 @@ class Discentes():
         CUREGEPs -- lista com os caminhos para os arquivos (UTF-16) contendo os
                     as informações sobre o curso, que devem ser o relatório
                     exportado via:
-                    SIGRA > Planejamento > Curso > CUREGEP
+                    sigra > Planejamento > Curso > CUREGEP
         arquivo -- caminho para o arquivo onde gravar os dados.
                    (default alunos.csv)
         separador -- separador de valores.
                      (default ;)
         '''
-        estatisticas = Curso.Estatisticas(CUREGEPs)
+        estatisticas = pl_curso.estatisticas(CUREGEPs)
         col_names = sorted(next(iter(estatisticas.values())).keys())
 
         with open(arquivo, 'w') as f:
@@ -152,15 +152,15 @@ class Docente():
         Argumentos:
         HEEME -- caminho para o arquivo (UTF-16) contendo o histórico de
                  menções, que deve ser o relatório exportado via:
-                 SIGRA > Acompanhamento > Histórico Escolar > HEEME
+                 sigra > Acompanhamento > Histórico Escolar > HEEME
         OFELST -- caminho para o arquivo (UTF-16) contendo os dados da oferta,
                   que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Oferta > OFELST
+                  sigra > Planejamento > Oferta > OFELST
         ignore -- lista com código de disciplinas que devem ser ignoradas na
                   contabilização (como '167681' -> Trabalho de Graduação 1).
         '''
-        estatisticas_de_mencoes = HistoricoEscolar.EstatisticaDeMencoes(HEEME)
-        oferta = Oferta.Listagem(OFELST)
+        estatisticas_de_mencoes = ac_he.estatisticas_de_mencoes(HEEME)
+        oferta = pl_oferta.listagem(OFELST)
 
         estatisticas = {}
         for periodo in estatisticas_de_mencoes:
@@ -205,9 +205,9 @@ class Docente():
         professores -- lista de nomes [parciais] professores.
         OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Oferta,
                   que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Oferta > OFELST
+                  sigra > Planejamento > Oferta > OFELST
         '''
-        oferta = Oferta.Listagem(OFELST)
+        oferta = pl_oferta.listagem(OFELST)
         oferta_docente = {}
 
         for professor in professores:
@@ -232,9 +232,9 @@ class Terminal():
         Argumentos:
         FLULST -- caminho para o arquivo (UTF-16) contendo a listagem do fluxo
                   de uma habilitação, que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Fluxo > FLULST
+                  sigra > Planejamento > Fluxo > FLULST
         '''
-        fluxo = Fluxo.Listagem(FLULST)
+        fluxo = pl_fluxo.listagem(FLULST)
 
         print()
         for p, periodo in fluxo.items():
@@ -257,10 +257,10 @@ class Terminal():
         Argumentos:
         OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Oferta,
                   que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Fluxo > FLULST
+                  sigra > Planejamento > Fluxo > FLULST
         FLULST -- caminho para o arquivo (UTF-16) contendo os dados do Fluxo de
                   uma habilitação, que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Fluxo > FLULST
+                  sigra > Planejamento > Fluxo > FLULST
         habilitacao -- parte do nome da habilitação para qual se quer filtrar
                        as turmas reservadas.
                        (default '')
@@ -274,9 +274,9 @@ class Terminal():
         HORARIOS = ['{:02d}:00 {:02d}:50'.format(h, h + 1)
                     for h in range(8, 19, 2)]
 
-        oferta = Oferta.Listagem(OFELST)
+        oferta = pl_oferta.listagem(OFELST)
 
-        fluxo = Fluxo.Listagem(FLULST)
+        fluxo = pl_fluxo.listagem(FLULST)
         for tipo in filtro_tipo:
             for disciplinas in fluxo.values():
                 if tipo in disciplinas:
@@ -328,10 +328,10 @@ class Terminal():
         Argumentos:
         OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Lista de
                   Oferta, que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Oferta > OFELST
+                  sigra > Planejamento > Oferta > OFELST
         FLULST -- caminho para o arquivo (UTF-16) contendo os dados do Fluxo de
                   um curso, que deve ser o relatório exportado via:
-                  SIGRA > Planejamento > Fluxo > FLULST
+                  sigra > Planejamento > Fluxo > FLULST
         habilitacao -- parte do nome da habilitação para qual se quer filtrar
                        as turmas reservadas
                        (default '')
@@ -341,8 +341,8 @@ class Terminal():
         '''
         DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-        oferta = Oferta.Listagem(OFELST)
-        fluxo = Fluxo.Listagem(FLULST)
+        oferta = pl_oferta.listagem(OFELST)
+        fluxo = pl_fluxo.listagem(FLULST)
 
         for disciplinas in fluxo.values():
             if 'OPT' in disciplinas:
