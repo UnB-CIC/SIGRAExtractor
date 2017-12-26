@@ -46,7 +46,7 @@ def listagem(arquivo):
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
-        return codigo.strip(), utils.capitalize(nome.strip())
+        return codigo.strip(), nome.strip().title()
 
     def parse_pre_requisitos(line):
         m = re.search(r'(\w{3}-\d{6}  .*$)', line)

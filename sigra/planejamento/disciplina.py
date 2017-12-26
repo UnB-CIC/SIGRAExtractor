@@ -41,7 +41,7 @@ def listagem(arquivo):
         m = eh_disciplina(line)
         orgao = m.group(1).strip()
         nivel = m.group(2).strip()
-        nome = utils.capitalize(m.group(3).strip())
+        nome = m.group(3).strip().title()
         rest = m.group(4).strip()
         creditos = utils.Creditos.to_string(m.group(5).strip(),
                                             m.group(6).strip(),
@@ -65,7 +65,7 @@ def listagem(arquivo):
             codigo, resto_do_nome = re.search(r'(\d{6})(.*)',
                                               content[i]).groups()
             if resto_do_nome:
-                nome += ' ' + utils.capitalize(resto_do_nome.strip())
+                nome += ' ' + resto_do_nome.strip().title()
 
             i += 1
 

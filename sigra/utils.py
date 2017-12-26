@@ -35,12 +35,6 @@ class Creditos():
                                     int(estudo))
 
 
-def capitalize(string):
-    '''Retorna o string dado com todas as palavras iniciando com letra
-    maiúscula.'''
-    return ' '.join(s.capitalize() for s in string.split())
-
-
 def load(arquivo, encoding='utf-16'):
     '''Lê o conteúdo do arquivo dado e o retorna.'''
     if not arquivo.endswith('.txt'):

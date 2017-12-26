@@ -88,7 +88,7 @@ def listagem(arquivo):
                                                                       i + 3]),
                                                         parse_credito(content[
                                                                       i + 4]))
-                    disciplina = {'nome': utils.capitalize(nome),
+                    disciplina = {'nome': nome.title(),
                                   'dept': dept,
                                   'créditos': creditos}
 
