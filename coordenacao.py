@@ -129,8 +129,7 @@ class Discentes():
 
     @staticmethod
     def contatos(ALUTEL,
-                 formato='{nome} <{email}>',
-                 arquivo='emails.txt'):
+                 formato='{nome} <{email}>'):
         '''Gera um arquivo com a lista de e-mails dos alunos regulares de um
         curso.
 
@@ -139,9 +138,9 @@ class Discentes():
                   informações de contatos dos alunos, que deve ser o relatório
                   exportado via:
                   sigra > Acompanhamento > Alunos > ALUTEL
-        formato -- formatação de cada registro.
-                   (default nome <email>)
-        arquivo -- arquivo onde gravar a lista de e-mails.
+        formato -- formatação de cada registro. Aceitam-se apenas os seguintes
+                   parâmetros: nome, email, telefone (entre chaves {})
+                   (default {nome} <{email}>)
         '''
         relacao = ac_alunos.contatos(ALUTEL)
         return [formato.format(nome=info['nome'],
