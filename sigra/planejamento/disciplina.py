@@ -82,7 +82,8 @@ def listagem(arquivo):
             i -= 1  # Saiu da repetição, mas será incrementado novamente
 
             pre_reqs = utils.parse_pre_requisitos(pre_reqs)
-            relacao[codigo] = {'Nome': nome, 'Órgão': orgao,
+            relacao[codigo] = {'Nome': nome,
+                               'Órgão': orgao,
                                'Créditos': creditos,
                                'Pré-requisitos': pre_reqs}
 

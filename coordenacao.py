@@ -10,17 +10,18 @@ from sigra import utils
 from sigra.acompanhamento import alunos as ac_alunos
 from sigra.acompanhamento import historico_escolar as ac_he
 from sigra.planejamento import curso as pl_curso
-from sigra.planejamento import disciplina as pl_disciplina
 from sigra.planejamento import fluxo as pl_fluxo
 from sigra.planejamento import oferta as pl_oferta
 
 
 class Discentes():
     @staticmethod
-    def matriculados_por_semestre(ALUREL, HEDIS, habilitacoes=[]):
+    def resultado_matriculados_por_semestre(ALUREL,
+                                            HEDIS,
+                                            habilitacoes=[]):
         '''Retorna um dicionário indicando, para cada período letivo em que uma
-        disciplina foi oferecida, quantos alunos de determinadas habilitações
-        forammatriculados.
+        disciplina foi oferecida, quais alunos de determinadas habilitações
+        foram matriculados e seus respectivos desempenhos no período.
 
         Argumentos:
         ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
@@ -40,17 +41,49 @@ class Discentes():
 
         if not habilitacoes:
             habilitacoes = alunos.keys()
+
         matriculas = set(matricula for habilitacao in habilitacoes
                          for periodo in alunos[habilitacao]['Alunos'].values()
                          for matricula in periodo)
+
+        for periodo in cursaram:
+            for turma in cursaram[periodo].values():
+                alunos_de_outras_habilitacoes = set(turma.keys()) - matriculas
+                for matricula in alunos_de_outras_habilitacoes:
+                    del turma[matricula]
+        return cursaram
+
+    @staticmethod
+    def matriculados_por_semestre(ALUREL,
+                                  HEDIS,
+                                  habilitacoes=[]):
+        '''Retorna um dicionário indicando, para cada período letivo em que uma
+        disciplina foi oferecida, quantos alunos de determinadas habilitações
+        foram matriculados.
+
+        Argumentos:
+        ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
+                  a serem considerados, que deve ser o ser o relatório
+                  exportado via:
+                  sigra > Acompanhamento > Alunos > ALUREL
+        HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de
+                 matrículas da disciplina , que deve ser o relatório exportado
+                 via:
+                 sigra > Acompanhamento > Histórico Escolar > HEDIS
+        habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
+                        todas.
+                        (default [])
+        '''
+        cursaram = Discentes.resultado_matriculados_por_semestre(ALUREL,
+                                                                 HEDIS,
+                                                                 habilitacoes)
 
         import collections
         contador = collections.defaultdict(int)
         for periodo in cursaram:
             for turma in cursaram[periodo].values():
                 for matricula in turma:
-                    if matricula in matriculas:
-                        contador[periodo] += 1
+                    contador[periodo] += 1
 
         return contador
 
@@ -95,7 +128,9 @@ class Discentes():
         return total_matriculados / num_turmas if num_turmas else 0
 
     @staticmethod
-    def contatos(ALUTEL, formato='{nome} <{email}>', arquivo='emails.txt'):
+    def contatos(ALUTEL,
+                 formato='{nome} <{email}>',
+                 arquivo='emails.txt'):
         '''Gera um arquivo com a lista de e-mails dos alunos regulares de um
         curso.
 
@@ -109,7 +144,8 @@ class Discentes():
         arquivo -- arquivo onde gravar a lista de e-mails.
         '''
         relacao = ac_alunos.contatos(ALUTEL)
-        return [formato.format(nome=info['nome'], email=info['e-mail'],
+        return [formato.format(nome=info['nome'],
+                               email=info['e-mail'],
                                telefone=info['telefone'])
                 for info in relacao.values()]
 
@@ -145,7 +181,9 @@ class Discentes():
 
 
 class Docente():
-    def estatistica_por_semestre(HEEME, OFELST, ignore=[]):
+    def estatistica_por_semestre(HEEME,
+                                 OFELST,
+                                 ignore=[]):
         '''Cruza as informações do histórico de menções de um semestre com a
         lista de oferta, retornando um dicionário com a informações.
 
@@ -197,7 +235,8 @@ class Docente():
         return estatisticas
 
     @staticmethod
-    def turmas_ofertadas(professores, OFELST):
+    def turmas_ofertadas(professores,
+                         OFELST):
         ''' Dada uma lista de nomes de professores, retorna um dicionário
         contendo as turmas a serem ofertadas por cada professor(a).
 
@@ -320,7 +359,9 @@ class Terminal():
                     print(''.join('{0: <12}'.format(cell) for cell in row))
 
     @staticmethod
-    def oferta_obrigatorias(OFELST, FLULST, habilitacao='',
+    def oferta_obrigatorias(OFELST,
+                            FLULST,
+                            habilitacao='',
                             mostra_opcoes=False):
         '''Imprime o fluxo de uma habilitação, indicando a oferta de disciplinas
         obrigatórias.
@@ -339,14 +380,14 @@ class Terminal():
                          disciplina ou não
                          (default False)
         '''
-        DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-
         oferta = pl_oferta.listagem(OFELST)
         fluxo = pl_fluxo.listagem(FLULST)
 
         for disciplinas in fluxo.values():
             if 'OPT' in disciplinas:
                 del disciplinas['OPT']
+
+        DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
         for p in fluxo:
             print('\n\nPeríodo: ', p)
