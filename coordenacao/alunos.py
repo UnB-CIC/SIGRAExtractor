@@ -11,42 +11,56 @@ from sigra.acompanhamento import historico_escolar as ac_he
 from sigra.planejamento import curso as pl_curso
 
 
-def resultado_matriculados_por_semestre(ALUREL,
-                                        HEDIS,
-                                        habilitacoes=[]):
-    '''Retorna um dicionário indicando, para cada período letivo em que uma
-    disciplina foi oferecida, quais alunos de determinadas habilitações
-    foram matriculados e seus respectivos desempenhos no período.
+def contatos(ALUTEL,
+             formato='{nome} <{email}>'):
+    '''Gera um arquivo com a lista de e-mails dos alunos regulares de um
+    curso.
 
     Argumentos:
-    ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
-              a serem considerados, que deve ser o ser o relatório
+    ALUTEL -- caminho para o arquivo (UTF-16) contendo a listagem das
+              informações de contatos dos alunos, que deve ser o relatório
               exportado via:
-              sigra > Acompanhamento > Alunos > ALUREL
-    HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de
-             matrículas da disciplina , que deve ser o relatório exportado
-             via:
-             sigra > Acompanhamento > Histórico Escolar > HEDIS
-    habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
-                    todas.
-                    (default [])
+              sigra > Acompanhamento > Alunos > ALUTEL
+    formato -- formatação de cada registro. Aceitam-se apenas os seguintes
+               parâmetros: nome, email, telefone (entre chaves {})
+               (default {nome} <{email}>)
     '''
-    alunos = ac_alunos.relacao(ALUREL)
-    cursaram = ac_he.alunos_que_cursaram_disciplina(HEDIS)
+    relacao = ac_alunos.contatos(ALUTEL)
+    return [formato.format(nome=info['nome'],
+                           email=info['e-mail'],
+                           telefone=info['telefone'])
+            for info in relacao.values()]
 
-    if not habilitacoes:
-        habilitacoes = alunos.keys()
 
-    matriculas = set(matricula for habilitacao in habilitacoes
-                     for periodo in alunos[habilitacao]['Alunos'].values()
-                     for matricula in periodo)
+def csv_com_entrada_saida_de_alunos(CUREGEPs,
+                                    arquivo='alunos.csv',
+                                    separador=';'):
+    '''Gera um arquivo com a as informações de entrada/saída de alunos do
+    curso por semestre, como uma listagem CSV.
 
-    for periodo in cursaram:
-        for turma in cursaram[periodo].values():
-            alunos_de_outras_habilitacoes = set(turma.keys()) - matriculas
-            for matricula in alunos_de_outras_habilitacoes:
-                del turma[matricula]
-    return cursaram
+    Argumentos:
+    CUREGEPs -- lista com os caminhos para os arquivos (UTF-16) contendo os
+                as informações sobre o curso, que devem ser o relatório
+                exportado via:
+                sigra > Planejamento > Curso > CUREGEP
+    arquivo -- caminho para o arquivo onde gravar os dados.
+               (default alunos.csv)
+    separador -- separador de valores.
+                 (default ;)
+    '''
+    estatisticas = pl_curso.estatisticas(CUREGEPs)
+    col_names = sorted(next(iter(estatisticas.values())).keys())
+
+    with open(arquivo, 'w') as f:
+        f.write('{}\n'.format(separador.join(['Período'] + col_names)))
+
+        for periodo in sorted(estatisticas.keys()):
+            f.write(periodo)
+            for k in col_names:
+                estatistica = estatisticas[periodo][k].values()
+                total = sum(int(n) for n in estatistica)
+                f.write('{}{}'.format(separador, total))
+            f.write('\n')
 
 
 def matriculados_por_semestre(ALUREL,
@@ -123,52 +137,39 @@ def media_de_matriculados_por_semestre(matriculados_por_semestre,
     return total_matriculados / num_turmas if num_turmas else 0
 
 
-def contatos(ALUTEL,
-             formato='{nome} <{email}>'):
-    '''Gera um arquivo com a lista de e-mails dos alunos regulares de um
-    curso.
+def resultado_matriculados_por_semestre(ALUREL,
+                                        HEDIS,
+                                        habilitacoes=[]):
+    '''Retorna um dicionário indicando, para cada período letivo em que uma
+    disciplina foi oferecida, quais alunos de determinadas habilitações
+    foram matriculados e seus respectivos desempenhos no período.
 
     Argumentos:
-    ALUTEL -- caminho para o arquivo (UTF-16) contendo a listagem das
-              informações de contatos dos alunos, que deve ser o relatório
+    ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
+              a serem considerados, que deve ser o ser o relatório
               exportado via:
-              sigra > Acompanhamento > Alunos > ALUTEL
-    formato -- formatação de cada registro. Aceitam-se apenas os seguintes
-               parâmetros: nome, email, telefone (entre chaves {})
-               (default {nome} <{email}>)
+              sigra > Acompanhamento > Alunos > ALUREL
+    HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de
+             matrículas da disciplina , que deve ser o relatório exportado
+             via:
+             sigra > Acompanhamento > Histórico Escolar > HEDIS
+    habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
+                    todas.
+                    (default [])
     '''
-    relacao = ac_alunos.contatos(ALUTEL)
-    return [formato.format(nome=info['nome'],
-                           email=info['e-mail'],
-                           telefone=info['telefone'])
-            for info in relacao.values()]
+    alunos = ac_alunos.relacao(ALUREL)
+    cursaram = ac_he.alunos_que_cursaram_disciplina(HEDIS)
 
+    if not habilitacoes:
+        habilitacoes = alunos.keys()
 
-def csv_com_entrada_saida_de_alunos(CUREGEPs, arquivo='alunos.csv',
-                                    separador=';'):
-    '''Gera um arquivo com a as informações de entrada/saída de alunos do
-    curso por semestre, como uma listagem CSV.
+    matriculas = set(matricula for habilitacao in habilitacoes
+                     for periodo in alunos[habilitacao]['Alunos'].values()
+                     for matricula in periodo)
 
-    Argumentos:
-    CUREGEPs -- lista com os caminhos para os arquivos (UTF-16) contendo os
-                as informações sobre o curso, que devem ser o relatório
-                exportado via:
-                sigra > Planejamento > Curso > CUREGEP
-    arquivo -- caminho para o arquivo onde gravar os dados.
-               (default alunos.csv)
-    separador -- separador de valores.
-                 (default ;)
-    '''
-    estatisticas = pl_curso.estatisticas(CUREGEPs)
-    col_names = sorted(next(iter(estatisticas.values())).keys())
-
-    with open(arquivo, 'w') as f:
-        f.write('{}\n'.format(separador.join(['Período'] + col_names)))
-
-        for periodo in sorted(estatisticas.keys()):
-            f.write(periodo)
-            for k in col_names:
-                estatistica = estatisticas[periodo][k].values()
-                total = sum(int(n) for n in estatistica)
-                f.write('{}{}'.format(separador, total))
-            f.write('\n')
+    for periodo in cursaram:
+        for turma in cursaram[periodo].values():
+            alunos_de_outras_habilitacoes = set(turma.keys()) - matriculas
+            for matricula in alunos_de_outras_habilitacoes:
+                del turma[matricula]
+    return cursaram
