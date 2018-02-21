@@ -76,17 +76,11 @@ def turmas_ofertadas(professores,
               SIGRA > Planejamento > Oferta > OFELST
     '''
     oferta = pl_oferta.listagem(OFELST)
-    oferta_docente = {}
 
-    for professor in professores:
-        for codigo, disciplina in sorted(oferta.items()):
-            for turma, dados in disciplina['turmas'].items():
-                if professor.lower() in dados['professores'].lower():
-                    if professor not in oferta_docente:
-                        oferta_docente[professor] = {}
-                    if codigo not in oferta_docente[professor]:
-                        oferta_docente[professor][codigo] = {}
-                    oferta_docente[professor][codigo][turma] = dados
+    oferta_docente = {professor: {codigo: {turma: dados}}
+                      for codigo, disciplina in oferta.items()
+                      for turma, dados in disciplina['turmas'].items()
+                      for professor in professores
+                      if professor.lower() in dados['professores'].lower()}
 
     return oferta_docente
-
