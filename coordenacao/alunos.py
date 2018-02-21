@@ -158,7 +158,7 @@ def resultado_matriculados_por_semestre(ALUREL,
                     (default [])
     '''
     alunos = ac_alunos.relacao(ALUREL)
-    cursaram = ac_he.alunos_que_cursaram_disciplina(HEDIS)
+    alunos_que_cursaram = ac_he.alunos_que_cursaram_disciplina(HEDIS)
 
     if not habilitacoes:
         habilitacoes = alunos.keys()
@@ -167,9 +167,8 @@ def resultado_matriculados_por_semestre(ALUREL,
                      for periodo in alunos[habilitacao]['Alunos'].values()
                      for matricula in periodo)
 
-    for periodo in cursaram:
-        for turma in cursaram[periodo].values():
-            alunos_de_outras_habilitacoes = set(turma.keys()) - matriculas
-            for matricula in alunos_de_outras_habilitacoes:
-                del turma[matricula]
-    return cursaram
+    listagem = {periodo: {k: v for matriculados in turmas.values()
+                          for k, v in matriculados.items()
+                          if k in matriculas}
+                for periodo, turmas in alunos_que_cursaram.items()}
+    return listagem
