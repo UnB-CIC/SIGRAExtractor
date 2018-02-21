@@ -21,19 +21,23 @@ def contatos(arquivo):
     '''
     content = utils.load(arquivo)
 
-    REGEX = r'(\d\d/\d{5,})[ ]+(\w.*)\n[ ]+(\w.*@.*)'
-    relacao = {}
-    for matricula, nome_e_tel, email in re.findall(REGEX, content):
+    def parse_info(match_obj):
+        matricula, nome_e_tel, email = match_obj
         if '   ' in nome_e_tel:
             infos = nome_e_tel.split('   ')
             nome, telefone = infos[0].strip(), infos[-1].strip()
         else:
             nome, telefone = nome_e_tel, ''
-        relacao[matricula] = {'nome': nome, 'e-mail': email,
-                              'telefone': telefone}
+        return (matricula, {'nome': nome,
+                            'e-mail': email,
+                            'telefone': telefone})
 
-    print('{} contatos.'.format(len(relacao)))
-    return relacao
+    REGEX = r'(\d\d/\d{5,}) +(\w.*)\n +(\w.*@.*)'
+    contatos = dict(parse_info(match_obj)
+                    for match_obj in re.findall(REGEX, content))
+
+    print('{} contatos.'.format(len(contatos)))
+    return contatos
 
 
 def relacao(arquivo):
@@ -51,14 +55,18 @@ def relacao(arquivo):
 
     num_registros = 0
     REGEX = r'(\d\d/\d{3,}) +(.*?) {2,}(\d+/\d+) {2,}(\w+) +(\d+) +(.*)[\s\S]'
-    for (matricula, nome, periodo,
-         ingresso, codigo, opcao) in re.findall(REGEX, content):
+    for (matricula,
+         nome,
+         periodo_ingresso,
+         forma_ingresso,
+         codigo,
+         nome_opcao) in re.findall(REGEX, content):
         if codigo not in relacao:
-            relacao[codigo] = {'Opção': opcao, 'Alunos': {}}
-        if periodo not in relacao[codigo]['Alunos']:
-            relacao[codigo]['Alunos'][periodo] = {}
-        aluno = {'Nome': nome, 'Ingresso': ingresso}
-        relacao[codigo]['Alunos'][periodo][matricula] = aluno
+            relacao[codigo] = {'Nome da Opção': nome_opcao, 'Alunos': {}}
+        if periodo_ingresso not in relacao[codigo]['Alunos']:
+            relacao[codigo]['Alunos'][periodo_ingresso] = {}
+        aluno = {'Nome': nome, 'Forma Ingresso': forma_ingresso}
+        relacao[codigo]['Alunos'][periodo_ingresso][matricula] = aluno
         num_registros += 1
 
     print('{} alunos relacionados.'.format(num_registros))
