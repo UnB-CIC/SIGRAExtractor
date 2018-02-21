@@ -20,7 +20,7 @@ def contatos(ALUTEL,
     ALUTEL -- caminho para o arquivo (UTF-16) contendo a listagem das
               informações de contatos dos alunos, que deve ser o relatório
               exportado via:
-              sigra > Acompanhamento > Alunos > ALUTEL
+              SIGRA > Acompanhamento > Alunos > ALUTEL
     formato -- formatação de cada registro. Aceitam-se apenas os seguintes
                parâmetros: nome, email, telefone (entre chaves {})
                (default {nome} <{email}>)
@@ -42,7 +42,7 @@ def csv_com_entrada_saida_de_alunos(CUREGEPs,
     CUREGEPs -- lista com os caminhos para os arquivos (UTF-16) contendo os
                 as informações sobre o curso, que devem ser o relatório
                 exportado via:
-                sigra > Planejamento > Curso > CUREGEP
+                SIGRA > Planejamento > Curso > CUREGEP
     arquivo -- caminho para o arquivo onde gravar os dados.
                (default alunos.csv)
     separador -- separador de valores.
@@ -74,11 +74,11 @@ def matriculados_por_semestre(ALUREL,
     ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
               a serem considerados, que deve ser o ser o relatório
               exportado via:
-              sigra > Acompanhamento > Alunos > ALUREL
+              SIGRA > Acompanhamento > Alunos > ALUREL
     HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de
              matrículas da disciplina , que deve ser o relatório exportado
              via:
-             sigra > Acompanhamento > Histórico Escolar > HEDIS
+             SIGRA > Acompanhamento > Histórico Escolar > HEDIS
     habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                     todas.
                     (default [])
@@ -148,11 +148,11 @@ def resultado_matriculados_por_semestre(ALUREL,
     ALUREL -- caminho para o arquivo (UTF-16) contendo a relação de alunos
               a serem considerados, que deve ser o ser o relatório
               exportado via:
-              sigra > Acompanhamento > Alunos > ALUREL
+              SIGRA > Acompanhamento > Alunos > ALUREL
     HEDIS -- caminho para o arquivo (UTF-16) contendo o histórico de
              matrículas da disciplina , que deve ser o relatório exportado
              via:
-             sigra > Acompanhamento > Histórico Escolar > HEDIS
+             SIGRA > Acompanhamento > Histórico Escolar > HEDIS
     habilitacoes -- conjunto de habilitações de interesse. Deixe vazia para
                     todas.
                     (default [])

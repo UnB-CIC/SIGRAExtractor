@@ -19,10 +19,10 @@ def estatistica_por_semestre(HEEME,
     Argumentos:
     HEEME -- caminho para o arquivo (UTF-16) contendo o histórico de
              menções, que deve ser o relatório exportado via:
-             sigra > Acompanhamento > Histórico Escolar > HEEME
+             SIGRA > Acompanhamento > Histórico Escolar > HEEME
     OFELST -- caminho para o arquivo (UTF-16) contendo os dados da oferta,
               que deve ser o relatório exportado via:
-              sigra > Planejamento > Oferta > OFELST
+              SIGRA > Planejamento > Oferta > OFELST
     ignore -- lista com código de disciplinas que devem ser ignoradas na
               contabilização (como '167681' -> Trabalho de Graduação 1).
     '''
@@ -73,7 +73,7 @@ def turmas_ofertadas(professores,
     professores -- lista de nomes [parciais] professores.
     OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Oferta,
               que deve ser o relatório exportado via:
-              sigra > Planejamento > Oferta > OFELST
+              SIGRA > Planejamento > Oferta > OFELST
     '''
     oferta = pl_oferta.listagem(OFELST)
     oferta_docente = {}

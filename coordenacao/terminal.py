@@ -18,7 +18,7 @@ def fluxo(FLULST):
     Argumentos:
     FLULST -- caminho para o arquivo (UTF-16) contendo a listagem do fluxo
               de uma habilitação, que deve ser o relatório exportado via:
-              sigra > Planejamento > Fluxo > FLULST
+              SIGRA > Planejamento > Fluxo > FLULST
     '''
     fluxo = pl_fluxo.listagem(FLULST)
 
@@ -44,10 +44,10 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
     Argumentos:
     OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Oferta,
               que deve ser o relatório exportado via:
-              sigra > Planejamento > Fluxo > FLULST
+              SIGRA > Planejamento > Fluxo > FLULST
     FLULST -- caminho para o arquivo (UTF-16) contendo os dados do Fluxo de
               uma habilitação, que deve ser o relatório exportado via:
-              sigra > Planejamento > Fluxo > FLULST
+              SIGRA > Planejamento > Fluxo > FLULST
     habilitacao -- parte do nome da habilitação para qual se quer filtrar
                    as turmas reservadas.
                    (default '')
@@ -117,10 +117,10 @@ def oferta_obrigatorias(OFELST,
     Argumentos:
     OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Lista de
               Oferta, que deve ser o relatório exportado via:
-              sigra > Planejamento > Oferta > OFELST
+              SIGRA > Planejamento > Oferta > OFELST
     FLULST -- caminho para o arquivo (UTF-16) contendo os dados do Fluxo de
               um curso, que deve ser o relatório exportado via:
-              sigra > Planejamento > Fluxo > FLULST
+              SIGRA > Planejamento > Fluxo > FLULST
     habilitacao -- parte do nome da habilitação para qual se quer filtrar
                    as turmas reservadas
                    (default '')
