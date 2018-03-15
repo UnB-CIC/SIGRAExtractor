@@ -10,6 +10,30 @@ from sigra.acompanhamento import historico_escolar as ac_he
 from sigra.planejamento import oferta as pl_oferta
 
 
+def carga_horaria_ofertada(OFELST):
+    '''Retorna um dicionário contendo a carga horária a ser cumprida por cada
+    professor(a), considerando disciplinas ofertadas com pelo menos 1 vaga.
+
+    Argumentos:
+    OFELST -- caminho para o arquivo (UTF-16) contendo os dados da Oferta,
+              que deve ser o relatório exportado via:
+              SIGRA > Planejamento > Oferta > OFELST
+    '''
+    oferta = pl_oferta.listagem(OFELST)
+
+    carga = {}
+    for codigo, dados in oferta.items():
+        for turma, detalhes in dados['turmas'].items():
+            if int(detalhes['vagas']) > 0:
+                for professor in detalhes['professores'].split(','):
+                    professor = professor.strip()
+                    if professor not in carga:
+                        carga[professor] = 0
+                    carga[professor] += utils.Creditos.total(dados['créditos'])
+
+    return carga
+
+
 def estatistica_por_semestre(HEEME,
                              OFELST,
                              ignore=[]):
