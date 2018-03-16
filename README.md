@@ -3,7 +3,7 @@ SIGRA
 
 Implementação de funções que manipulam dados de relatórios do Sistema de Graduação da UnB ([SIGRA](http://cpd.unb.br/ssi-sis-academicos)).
 
-O diretório [`sigra`](https://github.com/UnB-CIC/SIGRAExtractor/tree/master/sigra) define um módulo com o código para lidar com os relatórios emitidos pelo SIGRA, que devem ser exportados como arquivos `.txt`, com a codificação [UTF-16](https://pt.wikipedia.org/wiki/UTF-16). Cada relatório tem sua própria função de uso, seguindo a hierarquia de menus do SIGRA.
+O diretório [`sigra`](https://github.com/UnB-CIC/SIGRAExtractor/tree/master/sigra) define um módulo com o código para lidar com os relatórios emitidos pelo SIGRA, que devem ser exportados como arquivos `.txt`, com a codificação [UTF-16](https://pt.wikipedia.org/wiki/UTF-16). Cada relatório tem sua própria função de extração de dados, organizadas conforme a hierarquia de menus do SIGRA.
 
 O diretório [`coordenacao`](https://github.com/UnB-CIC/SIGRAExtractor/tree/master/coordenacao) define um módulo para lidar com os dados extraídos dos relatórios, consolidando-os como informações úteis.
 
