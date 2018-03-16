@@ -1,5 +1,5 @@
 #  -*- coding: utf-8 -*-
-#    @package: professores.py
+#    @package: terminal.py
 #     @author: Guilherme N. Ramos (gnramos@unb.br)
 #
 # Funções para mostrar informações no terminal.
@@ -78,7 +78,7 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
             linha = [h]
 
             for dia in DIAS:
-                aulas_do_dia = ''
+                aulas_do_dia = []
                 for disciplinas in fluxo[p].values():
                     for codigo in disciplinas:
                         if codigo not in oferta:
@@ -91,12 +91,10 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
                         for t in sorted(turmas):
                             turma = oferta[codigo]['turmas'][t]
                             for aula in turma['aulas']:
-                                if (dia in aula and
-                                        aula[dia]['horário'] == h):
-                                    if aulas_do_dia:
-                                        aulas_do_dia += ' '
-                                    aulas_do_dia += codigo + ' ' + t
-                linha.append(aulas_do_dia)
+                                if dia in aula and aula[dia]['horário'] == h:
+                                    aulas_do_dia.append(codigo + ' ' + t)
+
+                linha.append(' '.join(a for a in aulas_do_dia))
             table_data.append(linha)
 
         try:
@@ -104,7 +102,7 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
             print(AsciiTable(table_data).table)
         except Exception:
             for row in table_data:
-                print(''.join('{0: <12}'.format(cell) for cell in row))
+                print(''.join('{0: <22}'.format(cell) for cell in row))
 
 
 def oferta_obrigatorias(OFELST,
@@ -144,8 +142,7 @@ def oferta_obrigatorias(OFELST,
         for disciplinas in fluxo[p].values():
             for codigo in sorted(disciplinas):
                 turmas = sorted(t for t in oferta[codigo]['turmas']
-                                for r in oferta[codigo]['turmas'][t][
-                                    'reserva']
+                                for r in oferta[codigo]['turmas'][t]['reserva']
                                 if habilitacao in r.lower())
 
                 print('\n', codigo, oferta[codigo]['nome'])
