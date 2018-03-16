@@ -101,10 +101,21 @@ def turmas_ofertadas(professores,
     '''
     oferta = pl_oferta.listagem(OFELST)
 
-    oferta_docente = {professor: {codigo: {turma: dados}}
-                      for codigo, disciplina in oferta.items()
-                      for turma, dados in disciplina['turmas'].items()
-                      for professor in professores
-                      if professor.lower() in dados['professores'].lower()}
+    oferta_docente = {}
+    for codigo, disciplina in oferta.items():
+        for turma, dados in disciplina['turmas'].items():
+            if professores:
+                current_professores = [p for p in professores
+                                       if p.lower() in
+                                       dados['professores'].lower()]
+            else:
+                current_professores = dados['professores']
+
+            for professor in current_professores:
+                if professor not in oferta_docente:
+                    oferta_docente[professor] = {}
+                if codigo not in oferta_docente[professor]:
+                    oferta_docente[professor][codigo] = {}
+                oferta_docente[professor][codigo][turma] = dados
 
     return oferta_docente
