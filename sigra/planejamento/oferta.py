@@ -126,25 +126,25 @@ def listagem(arquivo):
         aula = {dia: {'horário': horario, 'local': local}} if dia else {}
         return (t, descricao, vagas, turno, aula, professor, reserva, obs)
 
-    content = preprocess(utils.load(arquivo))
+    lines = preprocess(utils.load(arquivo))
 
     oferta = {}
 
     i = 1
-    num_lines = len(content)
+    num_lines = len(lines)
     while i < num_lines:
-        if eh_disciplina(content[i]):
-            codigo, nome = parse_disciplina(content[i])
+        if eh_disciplina(lines[i]):
+            codigo, nome = parse_disciplina(lines[i])
             if codigo not in oferta:
                 oferta[codigo] = {'nome': nome}
 
             # ### Pré-requisitos ###
             i += 1
-            oferta[codigo]['créditos'] = parse_creditos(content[i])
+            oferta[codigo]['créditos'] = parse_creditos(lines[i])
 
             pre_reqs = ''
-            while not content[i].startswith('   Turma'):
-                pre_reqs += parse_pre_requisitos(content[i])
+            while not lines[i].startswith('   Turma'):
+                pre_reqs += parse_pre_requisitos(lines[i])
 
                 i += 1
 
@@ -158,21 +158,21 @@ def listagem(arquivo):
             turmas = {}
 
             i += 1
-            while i < num_lines and eh_nova_turma(content[i]):
+            while i < num_lines and eh_nova_turma(lines[i]):
                 (t, descricao, vagas, turno,
-                 aula, professor, reserva, obs) = parse_turma(content[i])
+                 aula, professor, reserva, obs) = parse_turma(lines[i])
                 turmas[t] = {'descrição': descricao, 'vagas': vagas,
                              'turno': turno, 'aulas': [aula],
                              'professores': professor,
                              'reserva': reserva, 'observação': obs}
 
                 i += 1
-                while i < num_lines and not eh_nova_turma(content[i]):
-                    if eh_disciplina(content[i]):
+                while i < num_lines and not eh_nova_turma(lines[i]):
+                    if eh_disciplina(lines[i]):
                         break
 
                     (_, descricao, vagas, turno,
-                     aula, professor, reserva, obs) = parse_turma(content[i])
+                     aula, professor, reserva, obs) = parse_turma(lines[i])
 
                     if descricao:
                         turmas[t]['descrição'] += ' ' + descricao
@@ -201,7 +201,7 @@ def listagem(arquivo):
                 oferta[codigo]['turmas'].update(turmas)
             # ### Turmas ###
 
-        if i < num_lines and not eh_disciplina(content[i]):
+        if i < num_lines and not eh_disciplina(lines[i]):
             i += 1
 
     num_disciplinas = len(oferta)

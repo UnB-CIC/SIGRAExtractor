@@ -36,20 +36,20 @@ def estatisticas(arquivos):
 
     stats = {}
     for arquivo in arquivos:
-        content = utils.load(arquivo).split('\n')
+        lines = utils.load(arquivo).split('\n')
 
         i = 0
-        while not lista_periodos(content[i]):
+        while not lista_periodos(lines[i]):
             i += 1
 
-        periodos = parse_periodos(content[i])
+        periodos = parse_periodos(lines[i])
         for p in periodos:
             stats[p] = {}
 
-        while not lista_estatistica(content[i]):
+        while not lista_estatistica(lines[i]):
             i += 1
-        while lista_estatistica(content[i]):
-            estatistica = parse_estatistica(content[i])
+        while lista_estatistica(lines[i]):
+            estatistica = parse_estatistica(lines[i])
 
             s = 1
             for p in periodos:

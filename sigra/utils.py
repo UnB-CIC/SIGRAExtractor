@@ -10,11 +10,11 @@ import re
 
 class Creditos():
     @staticmethod
-    def total(creditos_str, ignora_estudos=True):
+    def total(creditos_str, considera_estudo=False):
         ''' Retorna a quantidade total de créditos de uma disciplina.'''
         creditos = Creditos.from_string(creditos_str)
         qtde = sum(v for v in creditos.values())
-        if ignora_estudos:
+        if not considera_estudo:
             qtde -= creditos['Estudo']
         return qtde
 
@@ -31,7 +31,9 @@ class Creditos():
     def to_string(teoria, pratica, extensao, estudo):
         '''Retorna um string com a representação dos créditos de uma
         disciplina.'''
-        return '{}:{}:{}:{}'.format(int(teoria), int(pratica), int(extensao),
+        return '{}:{}:{}:{}'.format(int(teoria),
+                                    int(pratica),
+                                    int(extensao),
                                     int(estudo))
 
 

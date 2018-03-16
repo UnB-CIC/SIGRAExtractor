@@ -19,8 +19,6 @@ def contatos(arquivo):
                o relatório exportado via:
                SIGRA > Acompanhamento > Alunos > ALUTEL
     '''
-    content = utils.load(arquivo)
-
     def parse_info(match_obj):
         matricula, nome_e_tel, email = match_obj
         if '   ' in nome_e_tel:
@@ -31,6 +29,8 @@ def contatos(arquivo):
         return (matricula, {'nome': nome,
                             'e-mail': email,
                             'telefone': telefone})
+
+    content = utils.load(arquivo)
 
     REGEX = r'(\d\d/\d{5,}) +(\w.*)\n +(\w.*@.*)'
     contatos = dict(parse_info(match_obj)

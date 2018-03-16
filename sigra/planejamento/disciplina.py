@@ -50,32 +50,32 @@ def listagem(arquivo):
         domi = m.group(9)
         return orgao, nivel, nome, rest, creditos, domi
 
-    content = preprocess(utils.load(arquivo))
+    lines = preprocess(utils.load(arquivo))
 
     relacao = {}
     i = 1
-    num_lines = len(content)
+    num_lines = len(lines)
     while i < num_lines:
-        if eh_disciplina(content[i]):
+        if eh_disciplina(lines[i]):
             # No caso de disciplinas "repetidas", considera apenas a última
             # informação. Ex: 181315 que é listada em ADM e EPR.
             (orgao, nivel, nome, rest,
-             creditos, domi) = parse_disciplina(content[i])
+             creditos, domi) = parse_disciplina(lines[i])
             i += 1
             codigo, resto_do_nome = re.search(r'(\d{6})(.*)',
-                                              content[i]).groups()
+                                              lines[i]).groups()
             if resto_do_nome:
                 nome += ' ' + resto_do_nome.strip().title()
 
             i += 1
 
             pre_reqs = ''
-            while i < num_lines and not eh_disciplina(content[i]):
-                m = re.search(r'^ {100,}(\d{6})$', content[i])
+            while i < num_lines and not eh_disciplina(lines[i]):
+                m = re.search(r'^ {100,}(\d{6})$', lines[i])
                 if m:
                     pre_reqs += m.group(1)
                 else:
-                    m = re.search(r'^ {100,}(E|OU)$', content[i])
+                    m = re.search(r'^ {100,}(E|OU)$', lines[i])
                     if m:
                         pre_reqs += m.group(1)
                 i += 1
