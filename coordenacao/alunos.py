@@ -22,7 +22,7 @@ def contatos(ALUTEL,
               exportado via:
               SIGRA > Acompanhamento > Alunos > ALUTEL
     formato -- formatação de cada registro. Aceitam-se apenas os seguintes
-               parâmetros: nome, email, telefone (entre chaves {})
+               parâmetros: nome, email, telefone (entre chaves {}).
                (default {nome} <{email}>)
     '''
     relacao = ac_alunos.contatos(ALUTEL)
@@ -126,13 +126,14 @@ def media_de_matriculados_por_semestre(matriculados_por_semestre,
     num_turmas = 0
     total_matriculados = 0
     for periodo, matriculados in matriculados_por_semestre.items():
-        if matriculados < 1:
+        num_matriculas = len(matriculados)
+        if num_matriculas < 1:
             continue
         if ignora_verao and periodo.endswith('/0'):
             continue
         if filtro_de_semestre and filtra(periodo):
             continue
-        total_matriculados += matriculados
+        total_matriculados += num_matriculas
         num_turmas += 1
     return total_matriculados / num_turmas if num_turmas else 0
 
@@ -163,12 +164,18 @@ def resultado_matriculados_por_semestre(ALUREL,
     if not habilitacoes:
         habilitacoes = alunos.keys()
 
-    matriculas = set(matricula for habilitacao in habilitacoes
+    matriculas = set(matricula
+                     for habilitacao in habilitacoes
                      for periodo in alunos[habilitacao]['Alunos'].values()
                      for matricula in periodo)
 
-    listagem = {periodo: {k: v for matriculados in turmas.values()
-                          for k, v in matriculados.items()
-                          if k in matriculas}
-                for periodo, turmas in alunos_que_cursaram.items()}
+    listagem = {}
+    for periodo, turmas in alunos_que_cursaram.items():
+        for matriculados in turmas.values():
+            for matricula, infos in matriculados.items():
+                if matricula in matriculas:
+                    if periodo not in listagem:
+                        listagem[periodo] = {}
+                    listagem[periodo][matricula] = infos
+
     return listagem
