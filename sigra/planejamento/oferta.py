@@ -62,12 +62,19 @@ def listagem(arquivo):
 
         return [line for line in content.split('\n') if line]
 
+    def eh_centro_de_custo(line):
+        return re.search(r'^(\w+.*?)    -  (\w+.*?)$', line)
+
     def eh_disciplina(line):
-        return re.search(r'^.{10,14} -  \w+', line)
+        return re.search(r'^ .{10,14} -  \w+', line)
 
     def eh_nova_turma(line):
         REGEX = r'^  ([A-Z]{1,2}) .*?(\d+) +(Diurno|Noturno|Ambos)'
         return re.search(REGEX, line)
+
+    def parse_centro_de_custo(line):
+        centro, nome = line.split('  -  ')
+        return centro.strip(), nome.strip().title()
 
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
@@ -164,20 +171,25 @@ def listagem(arquivo):
 
     oferta = {}
 
-    i = 1
+    i = 0
     num_lines = len(lines)
     while i < num_lines:
+        if eh_centro_de_custo(lines[i]):
+            centro_de_custo, _ = parse_centro_de_custo(lines[i])
+            i += 2
+
         if eh_disciplina(lines[i]):
             codigo, nome = parse_disciplina(lines[i])
 
             i += 1
             if codigo not in oferta:
-                oferta[codigo] = DisciplinaOfertada('',
+                oferta[codigo] = DisciplinaOfertada(centro_de_custo,
                                                     codigo,
                                                     nome,
                                                     parse_creditos(lines[i]),
                                                     [],
                                                     {})
+                print(oferta[codigo])
             # ### Pré-requisitos ###
             pre_reqs = ''
             while not lines[i].startswith('   Turma'):
@@ -201,7 +213,7 @@ def listagem(arquivo):
 
                 i += 1
                 while i < num_lines and not eh_nova_turma(lines[i]):
-                    if eh_disciplina(lines[i]):
+                    if eh_disciplina(lines[i]) or eh_centro_de_custo(lines[i]):
                         break
 
                     _, info = parse_turma(lines[i])
@@ -235,9 +247,6 @@ def listagem(arquivo):
             else:
                 oferta[codigo].turmas.update(turmas)
             # ### Turmas ###
-
-        if i < num_lines and not eh_disciplina(lines[i]):
-            i += 1
 
     num_disciplinas = len(oferta)
     num_turmas = sum(len(oferta[codigo].turmas) for codigo in oferta)
