@@ -9,31 +9,38 @@ import re
 
 
 class Disciplina():
-    def __init__(self, depto, codigo, nome, creditos):
+    def __init__(self, depto, codigo, nome, creditos, pre_requisitos=[]):
         self.depto = depto
         self.codigo = codigo
         self.nome = nome
+        self.pre_requisitos = pre_requisitos
 
-        creditos = creditos.split(':')
-        self.creditos = {'Teoria': int(creditos[0]),
-                         'Prática': int(creditos[1]),
-                         'Extensão': int(creditos[2]),
-                         'Estudo': int(creditos[3])}
+        quantidades = creditos.split(':')
+        self.__creditos = {'Teoria': int(quantidades[0]),
+                           'Prática': int(quantidades[1]),
+                           'Extensão': int(quantidades[2]),
+                           'Estudo': int(quantidades[3])}
 
-    def total_creditos(self, considera_estudo=False):
+    def __repr__(self):
+        return '({}) {} - {} ({})'.format(self.depto,
+                                          self.codigo,
+                                          self.nome,
+                                          self.creditos_str())
+
+    def creditos(self, considera_estudo=False):
         ''' Retorna a quantidade total de créditos de uma disciplina.'''
-        qtde = sum(v for v in self.creditos.values())
+        qtde = sum(v for v in self.__creditos.values())
         if not considera_estudo:
-            qtde -= self.creditos['Estudo']
+            qtde -= self.__creditos['Estudo']
         return qtde
 
     def creditos_str(self):
         '''Retorna um string com a representação dos créditos de uma
         disciplina.'''
-        return '{}:{}:{}:{}'.format(self.creditos['Teoria'],
-                                    self.creditos['Prática'],
-                                    self.creditos['Extensão'],
-                                    self.creditos['Estudo'])
+        return '{}:{}:{}:{}'.format(self.__creditos['Teoria'],
+                                    self.__creditos['Prática'],
+                                    self.__creditos['Extensão'],
+                                    self.__creditos['Estudo'])
 
 
 def load(arquivo, encoding='utf-16'):

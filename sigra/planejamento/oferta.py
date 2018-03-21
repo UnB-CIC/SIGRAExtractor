@@ -10,6 +10,35 @@ import re
 from sigra import utils
 
 
+class TurmaOfertada():
+    def __init__(self, turma, descricao, vagas, turno, aulas,
+                 professores, reserva='', observacoes=''):
+        self.turma = turma
+        self.descricao = descricao
+        self.vagas = vagas
+        self.turno = turno
+        self.aulas = aulas if isinstance(aulas, dict) else {aulas.dia: aulas}
+        self.professores = professores
+        self.reserva = reserva
+        self.observacoes = observacoes
+
+    def __repr__(self):
+        return '{} {}'.format(self.turma,
+                              ','.join(str(a) for a in self.aulas if a))
+
+
+class DisciplinaOfertada(utils.Disciplina):
+    def __init__(self, depto, codigo, nome, creditos,
+                 pre_requisitos=[], turmas={}):
+        super().__init__(depto, codigo, nome, creditos, pre_requisitos)
+        self.turmas = turmas
+
+    def __repr__(self):
+        turmas = '\n\t'.join(t + ' ' + self.turmas[t]
+                             for t in sorted(self.turmas))
+        return '{}\n\t{}'.format(super().__repr__(), turmas)
+
+
 def listagem(arquivo):
     '''Retorna um dicionário com as informações de cada disciplina
     ofertada, extraindo as informações do arquivo de entrada.
@@ -20,6 +49,8 @@ def listagem(arquivo):
                SIGRA > Planejamento > Oferta > OFELST
 
     No caso de pré-requisitos, veja a função utils.parse_pre_requisitos.
+
+    @to-do Separação por centro de custo.
     '''
     def preprocess(content):
         HEADER = r'Universidade de Brasília.*[\s\S]*?' \
@@ -41,8 +72,10 @@ def listagem(arquivo):
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
         m = re.search(CREDITOS, line)
-        return utils.Creditos.to_string(m.group(1), m.group(2),
-                                        m.group(3), m.group(4))
+        return '{}:{}:{}:{}'.format(int(m.group(1)),
+                                    int(m.group(2)),
+                                    int(m.group(3)),
+                                    int(m.group(4)))
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
@@ -123,8 +156,9 @@ def listagem(arquivo):
                 if len(line) > 36:
                     professor, reserva, obs = parse_Prof_Reserva_Obs(line[36:])
 
-        aula = {dia: {'horário': horario, 'local': local}} if dia else {}
-        return (t, descricao, vagas, turno, aula, professor, reserva, obs)
+        aula = {dia: {horario: local}} if dia else {}
+        return t, TurmaOfertada(t, descricao, vagas, turno, aula, professor,
+                                reserva, obs)
 
     lines = preprocess(utils.load(arquivo))
 
@@ -135,13 +169,16 @@ def listagem(arquivo):
     while i < num_lines:
         if eh_disciplina(lines[i]):
             codigo, nome = parse_disciplina(lines[i])
-            if codigo not in oferta:
-                oferta[codigo] = {'nome': nome}
 
-            # ### Pré-requisitos ###
             i += 1
-            oferta[codigo]['créditos'] = parse_creditos(lines[i])
-
+            if codigo not in oferta:
+                oferta[codigo] = DisciplinaOfertada('',
+                                                    codigo,
+                                                    nome,
+                                                    parse_creditos(lines[i]),
+                                                    [],
+                                                    {})
+            # ### Pré-requisitos ###
             pre_reqs = ''
             while not lines[i].startswith('   Turma'):
                 pre_reqs += parse_pre_requisitos(lines[i])
@@ -151,7 +188,7 @@ def listagem(arquivo):
             p = []
             for opcoes in pre_reqs.split('OU'):
                 p.append(re.findall(r'\d{6}', opcoes))
-            oferta[codigo]['pré-requisitos'] = p
+            oferta[codigo].pre_requisitos = p
             # ### Pré-requisitos ###
 
             # ### Turmas ###
@@ -159,53 +196,51 @@ def listagem(arquivo):
 
             i += 1
             while i < num_lines and eh_nova_turma(lines[i]):
-                (t, descricao, vagas, turno,
-                 aula, professor, reserva, obs) = parse_turma(lines[i])
-                turmas[t] = {'descrição': descricao, 'vagas': vagas,
-                             'turno': turno, 'aulas': [aula],
-                             'professores': professor,
-                             'reserva': reserva, 'observação': obs}
+                t, info = parse_turma(lines[i])
+                turmas[t] = info
 
                 i += 1
                 while i < num_lines and not eh_nova_turma(lines[i]):
                     if eh_disciplina(lines[i]):
                         break
 
-                    (_, descricao, vagas, turno,
-                     aula, professor, reserva, obs) = parse_turma(lines[i])
+                    _, info = parse_turma(lines[i])
 
-                    if descricao:
-                        turmas[t]['descrição'] += ' ' + descricao
-                    if aula:
-                        turmas[t]['aulas'].append(aula)
-                    if professor:
-                        if len(professor.split()) == 1:
+                    if info.descricao:
+                        turmas[t].descricao += ' ' + info.descricao
+                    for dia in info.aulas:
+                        if dia in turmas[t].aulas:
+                            turmas[t].aulas[dia].update(info.aulas[dia])
+                        else:
+                            turmas[t].aulas.update(info.aulas)
+                    if info.professores:
+                        if len(info.professores.split()) == 1:
                             # Supondo que haja um professor com nome muito
                             # longo, a última parte se estende em uma nova
                             # linha
-                            turmas[t]['professores'] += ' ' + professor
+                            turmas[t].professores += ' ' + info.professores
                         else:
                             # É um nome composto de pelo menos duas partes,
                             # supõe-se que seja de um novo professor
-                            turmas[t]['professores'] += ', ' + professor
-                    if reserva:
-                        turmas[t]['reserva'].update(reserva)
-                    if obs:
-                        turmas[t]['observação'] += ' ' + obs
+                            turmas[t].professores += ', ' + info.professores
+                    if info.reserva:
+                        turmas[t].reserva.update(info.reserva)
+                    if info.observacoes:
+                        turmas[t].observacoes += ' ' + info.observacoes
 
                     i += 1
 
-            if 'turmas' not in oferta[codigo]:
-                oferta[codigo]['turmas'] = turmas
+            if not oferta[codigo].turmas:
+                oferta[codigo].turmas = turmas
             else:
-                oferta[codigo]['turmas'].update(turmas)
+                oferta[codigo].turmas.update(turmas)
             # ### Turmas ###
 
         if i < num_lines and not eh_disciplina(lines[i]):
             i += 1
 
     num_disciplinas = len(oferta)
-    num_turmas = sum(len(oferta[codigo]['turmas']) for codigo in oferta)
+    num_turmas = sum(len(oferta[codigo].turmas) for codigo in oferta)
     print('{} disciplinas ({} turmas) ofertadas.'.format(num_disciplinas,
                                                          num_turmas))
 

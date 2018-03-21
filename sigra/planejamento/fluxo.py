@@ -82,19 +82,10 @@ def listagem(arquivo):
 
                     i += 1
                     dept, codigo, nome = parse_disciplina(lines[i])
-
-                    teoria = parse_credito(lines[i + 1])
-                    pratica = parse_credito(lines[i + 2])
-                    extensao = parse_credito(lines[i + 3])
-                    estudo = parse_credito(lines[i + 4])
-                    creditos = utils.Creditos.to_string(teoria,
-                                                        pratica,
-                                                        extensao,
-                                                        estudo)
-
-                    disciplina = {'nome': nome.title(),
-                                  'dept': dept,
-                                  'créditos': creditos}
+                    creditos = ':'.join([parse_credito(lines[i + 1]),
+                                         parse_credito(lines[i + 2]),
+                                         parse_credito(lines[i + 3]),
+                                         parse_credito(lines[i + 4])])
 
                     i += 5
                     pr = ''
@@ -113,7 +104,8 @@ def listagem(arquivo):
                             i += 1
 
                     pr = utils.parse_pre_requisitos(pr)
-                    disciplina['pré-requisitos'] = pr
+                    disciplina = utils.Disciplina(dept, codigo, nome.title(),
+                                                  creditos, pr)
 
                     periodo[tipo][codigo] = disciplina
 

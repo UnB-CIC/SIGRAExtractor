@@ -5,7 +5,6 @@
 # Funções para lidar com informações dos professores.
 
 
-from sigra import utils
 from sigra.acompanhamento import historico_escolar as ac_he
 from sigra.planejamento import oferta as pl_oferta
 
@@ -22,14 +21,14 @@ def carga_horaria_ofertada(OFELST):
     oferta = pl_oferta.listagem(OFELST)
 
     carga = {}
-    for codigo, dados in oferta.items():
-        for turma, detalhes in dados['turmas'].items():
-            if int(detalhes['vagas']) > 0:
-                for professor in detalhes['professores'].split(','):
+    for codigo, disciplina in oferta.items():
+        for turma, detalhes in disciplina.turmas.items():
+            if int(detalhes.vagas) > 0:
+                for professor in detalhes.professores.split(','):
                     professor = professor.strip()
                     if professor not in carga:
                         carga[professor] = 0
-                    carga[professor] += utils.Creditos.total(dados['créditos'])
+                    carga[professor] += disciplina.creditos()
 
     return carga
 
@@ -68,13 +67,12 @@ def estatistica_por_semestre(HEEME,
                             disciplinas[codigo]['Turmas'][turma] == 0):
                         continue
 
-                    num_cred = utils.Creditos.total(oferta[codigo][
-                                                    'créditos'])
+                    num_cred = oferta[codigo].creditos()
 
-                    if turma in oferta[codigo]['turmas']:
+                    if turma in oferta[codigo].turmas:
                         num_alunos = disciplinas[codigo]['Turmas'][turma]
-                        professores = oferta[codigo]['turmas'][turma][
-                            'professores'].split(',')
+                        professores = oferta[codigo].turmas[
+                            turma].professores.split(',')
                         for p in professores:
                             if p not in docentes:
                                 docentes[p] = {'creditos': 0,
@@ -103,19 +101,19 @@ def turmas_ofertadas(professores,
 
     oferta_docente = {}
     for codigo, disciplina in oferta.items():
-        for turma, dados in disciplina['turmas'].items():
+        for turma, detalhes in disciplina.turmas.items():
             if professores:
                 current_professores = [p for p in professores
                                        if p.lower() in
-                                       dados['professores'].lower()]
+                                       detalhes.professores.lower()]
             else:
-                current_professores = dados['professores']
+                current_professores = detalhes.professores
 
             for professor in current_professores:
                 if professor not in oferta_docente:
                     oferta_docente[professor] = {}
                 if codigo not in oferta_docente[professor]:
                     oferta_docente[professor][codigo] = {}
-                oferta_docente[professor][codigo][turma] = dados
+                oferta_docente[professor][codigo][turma] = detalhes
 
     return oferta_docente

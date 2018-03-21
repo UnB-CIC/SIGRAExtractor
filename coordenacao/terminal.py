@@ -5,8 +5,6 @@
 # Funções para mostrar informações no terminal.
 
 
-from sigra import utils
-
 from sigra.planejamento import fluxo as pl_fluxo
 from sigra.planejamento import oferta as pl_oferta
 
@@ -24,14 +22,14 @@ def fluxo(FLULST):
 
     print()
     for p, periodo in fluxo.items():
-        num_cred = sum(utils.Creditos.total(d['créditos'])
+        num_cred = sum(d.creditos()
                        for disciplinas in periodo.values()
                        for d in disciplinas.values())
         print('{} - ({} créditos)'.format(p, num_cred))
 
         for tipo, disciplinas in sorted(periodo.items()):
             for codigo, detalhes in sorted(disciplinas.items()):
-                print(tipo, codigo, detalhes['nome'])
+                print(tipo, codigo, detalhes.nome)
 
         print()
 
@@ -83,16 +81,15 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
                     for codigo in disciplinas:
                         if codigo not in oferta:
                             continue
-                        turmas = oferta[codigo]['turmas']
+                        turmas = oferta[codigo].turmas
                         turmas = [t for t, detalhes in turmas.items()
-                                  for reserva in detalhes['reserva']
+                                  for reserva in detalhes.reserva
                                   if habilitacao in reserva.lower()]
 
                         for t in sorted(turmas):
-                            turma = oferta[codigo]['turmas'][t]
-                            for aula in turma['aulas']:
-                                if dia in aula and aula[dia]['horário'] == h:
-                                    aulas_do_dia.append(codigo + ' ' + t)
+                            turma = oferta[codigo].turmas[t]
+                            if dia in turma.aulas and h in turma.aulas[dia]:
+                                aulas_do_dia.append(codigo + ' ' + t)
 
                 linha.append(' '.join(a for a in aulas_do_dia))
             table_data.append(linha)
@@ -141,21 +138,20 @@ def oferta_obrigatorias(OFELST,
 
         for disciplinas in fluxo[p].values():
             for codigo in sorted(disciplinas):
-                turmas = sorted(t for t in oferta[codigo]['turmas']
-                                for r in oferta[codigo]['turmas'][t]['reserva']
+                turmas = sorted(t for t in oferta[codigo].turmas
+                                for r in oferta[codigo].turmas[t].reserva
                                 if habilitacao in r.lower())
 
-                print('\n', codigo, oferta[codigo]['nome'])
+                print('\n', codigo, oferta[codigo].nome)
 
                 reservas = []
                 for t in turmas:
-                    turma = oferta[codigo]['turmas'][t]
+                    turma = oferta[codigo].turmas[t]
                     for dia in DIAS:
-                        for aula in turma['aulas']:
-                            if dia in aula:
-                                hora = aula[dia]['horário']
+                        if dia in turma.aulas:
+                            for h in sorted(turma.aulas[dia]):
                                 reservas.append('\t\t{} {} {}'.format(
-                                                t, dia, hora))
+                                                t, dia, h))
                 if habilitacao and reservas:
                     print('\tReserva')
                     print('\n'.join(reservas))
@@ -163,10 +159,10 @@ def oferta_obrigatorias(OFELST,
                 if mostra_opcoes:
                     if habilitacao:
                         print('\tOutros')
-                    for t in sorted(oferta[codigo]['turmas']):
+                    for t in sorted(oferta[codigo].turmas):
                         if t not in turmas:
-                            turma = oferta[codigo]['turmas'][t]
+                            turma = oferta[codigo].turmas[t]
                             for dia in DIAS:
-                                if dia in turma['aulas']:
-                                    hora = turma['aulas'][dia]['horário']
-                                    print('\t\t', t, dia, hora)
+                                if dia in turma.aulas:
+                                    for h in sorted(turma.aulas[dia]):
+                                        print('\t\t', t, dia, h)
