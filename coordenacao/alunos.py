@@ -126,14 +126,14 @@ def media_de_matriculados_por_semestre(matriculados_por_semestre,
     num_turmas = 0
     total_matriculados = 0
     for periodo, matriculados in matriculados_por_semestre.items():
-        num_matriculas = len(matriculados)
-        if num_matriculas < 1:
+        # num_matriculas = len(matriculados)
+        if matriculados < 1:
             continue
         if ignora_verao and periodo.endswith('/0'):
             continue
         if filtro_de_semestre and filtra(periodo):
             continue
-        total_matriculados += num_matriculas
+        total_matriculados += matriculados
         num_turmas += 1
     return total_matriculados / num_turmas if num_turmas else 0
 
