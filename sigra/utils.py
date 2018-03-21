@@ -8,33 +8,32 @@
 import re
 
 
-class Creditos():
-    @staticmethod
-    def total(creditos_str, considera_estudo=False):
+class Disciplina():
+    def __init__(self, depto, codigo, nome, creditos):
+        self.depto = depto
+        self.codigo = codigo
+        self.nome = nome
+
+        creditos = creditos.split(':')
+        self.creditos = {'Teoria': int(creditos[0]),
+                         'Prática': int(creditos[1]),
+                         'Extensão': int(creditos[2]),
+                         'Estudo': int(creditos[3])}
+
+    def total_creditos(self, considera_estudo=False):
         ''' Retorna a quantidade total de créditos de uma disciplina.'''
-        creditos = Creditos.from_string(creditos_str)
-        qtde = sum(v for v in creditos.values())
+        qtde = sum(v for v in self.creditos.values())
         if not considera_estudo:
-            qtde -= creditos['Estudo']
+            qtde -= self.creditos['Estudo']
         return qtde
 
-    @staticmethod
-    def from_string(string):
-        '''Retorna um dicionário contendo a separação de créditos por tipo.'''
-        creditos = string.split(':')
-        return {'Teoria': int(creditos[0]),
-                'Prática': int(creditos[1]),
-                'Extensão': int(creditos[2]),
-                'Estudo': int(creditos[3])}
-
-    @staticmethod
-    def to_string(teoria, pratica, extensao, estudo):
+    def creditos_str(self):
         '''Retorna um string com a representação dos créditos de uma
         disciplina.'''
-        return '{}:{}:{}:{}'.format(int(teoria),
-                                    int(pratica),
-                                    int(extensao),
-                                    int(estudo))
+        return '{}:{}:{}:{}'.format(self.creditos['Teoria'],
+                                    self.creditos['Prática'],
+                                    self.creditos['Extensão'],
+                                    self.creditos['Estudo'])
 
 
 def load(arquivo, encoding='utf-16'):
