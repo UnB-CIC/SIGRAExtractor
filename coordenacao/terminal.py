@@ -21,17 +21,8 @@ def fluxo(FLULST):
     fluxo = pl_fluxo.listagem(FLULST)
 
     print()
-    for p, periodo in fluxo.items():
-        num_cred = sum(d.creditos()
-                       for disciplinas in periodo.values()
-                       for d in disciplinas.values())
-        print('{} - ({} créditos)'.format(p, num_cred))
-
-        for tipo, disciplinas in sorted(periodo.items()):
-            for codigo, detalhes in sorted(disciplinas.items()):
-                print(tipo, codigo, detalhes.nome)
-
-        print()
+    for periodo in sorted(fluxo):
+        print('{}\n'.format(fluxo[periodo]))
 
 
 def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
@@ -67,7 +58,7 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
             if tipo in disciplinas:
                 del disciplinas[tipo]
 
-    for p in fluxo:
+    for p in sorted(fluxo):
         print('\n\nPeríodo: ', p)
         print('===========')
 
@@ -77,7 +68,7 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
 
             for dia in DIAS:
                 aulas_do_dia = []
-                for disciplinas in fluxo[p].values():
+                for disciplinas in fluxo[p].disciplinas.values():
                     for codigo in disciplinas:
                         if codigo not in oferta:
                             continue
@@ -126,17 +117,17 @@ def oferta_obrigatorias(OFELST,
     oferta = pl_oferta.listagem(OFELST)
     fluxo = pl_fluxo.listagem(FLULST)
 
-    for disciplinas in fluxo.values():
-        if 'OPT' in disciplinas:
-            del disciplinas['OPT']
+    for periodo in fluxo.values():
+        if 'OPT' in periodo.disciplinas:
+            del periodo.disciplinas['OPT']
 
     DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
-    for p in fluxo:
+    for p in sorted(fluxo):
         print('\n\nPeríodo: ', p)
         print('===========')
 
-        for disciplinas in fluxo[p].values():
+        for disciplinas in fluxo[p].disciplinas.values():
             for codigo in sorted(disciplinas):
                 turmas = sorted(t for t in oferta[codigo].turmas
                                 for r in oferta[codigo].turmas[t].reserva

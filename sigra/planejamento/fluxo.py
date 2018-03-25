@@ -10,6 +10,22 @@ import re
 from sigra import utils
 
 
+class PeriodoDoFluxo():
+    def __init__(self, numero, creditos, disciplinas={}):
+        self.numero = numero
+        self.creditos = creditos
+        self.disciplinas = disciplinas
+
+    def __repr__(self):
+        disciplinas = ''.join('\n\t{} {} {}'.format(tipo, codigo, descricao)
+                              for tipo, disciplinas in self.disciplinas.items()
+                              for codigo, descricao in disciplinas.items())
+
+        return 'Período {} ({} créditos){}'.format(self.numero,
+                                                   self.creditos,
+                                                   disciplinas)
+
+
 def listagem(arquivo):
     '''Retorna um dicionário com as informações das disciplinas listadas no
     fluxo em cada período, extraindo as informações do arquivo de entrada.
@@ -66,7 +82,7 @@ def listagem(arquivo):
     while i < num_lines:
         if eh_novo_periodo(lines[i]):
             p, num_creditos = parse_pre_requisitos(lines[i])
-            periodo = {}
+            disciplinas = {}
 
             i += 3  # Pulando o cabeçalho
 
@@ -77,8 +93,8 @@ def listagem(arquivo):
 
                 if eh_modalidade(lines[i]):
                     tipo = parse_modalidade(lines[i])
-                    if tipo not in periodo:
-                        periodo[tipo] = {}
+                    if tipo not in disciplinas:
+                        disciplinas[tipo] = {}
 
                     i += 1
                     dept, codigo, nome = parse_disciplina(lines[i])
@@ -104,15 +120,15 @@ def listagem(arquivo):
                             i += 1
 
                     pr = utils.parse_pre_requisitos(pr)
-                    disciplina = utils.Disciplina(dept, codigo, nome.title(),
-                                                  creditos, pr)
-
-                    periodo[tipo][codigo] = disciplina
+                    disciplinas[tipo][codigo] = utils.Disciplina(dept,
+                                                                 codigo,
+                                                                 nome.title(),
+                                                                 creditos,
+                                                                 pr)
 
                 i += 1
 
-            fluxo[p] = periodo
-
+            fluxo[p] = PeriodoDoFluxo(p, num_creditos, disciplinas)
         i += 1
 
     return fluxo
