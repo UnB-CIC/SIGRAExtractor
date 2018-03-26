@@ -98,10 +98,10 @@ def listagem(arquivo):
 
                     i += 1
                     dept, codigo, nome = parse_disciplina(lines[i])
-                    creditos = ':'.join([parse_credito(lines[i + 1]),
-                                         parse_credito(lines[i + 2]),
-                                         parse_credito(lines[i + 3]),
-                                         parse_credito(lines[i + 4])])
+                    creditos = utils.Creditos(parse_credito(lines[i + 1]),
+                                              parse_credito(lines[i + 2]),
+                                              parse_credito(lines[i + 3]),
+                                              parse_credito(lines[i + 4]))
 
                     i += 5
                     pr = ''

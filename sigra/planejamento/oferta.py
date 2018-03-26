@@ -10,6 +10,26 @@ import re
 from sigra import utils
 
 
+class Aula():
+    DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta',
+            'Sábado', 'Domingo']
+    HORARIOS = ['08:00 09:50', '10:00 11:50', '12:00 13:50', '16:00 17:50',
+                '18:00 19:50', '19:00 20:40', '20:50 22:30']
+
+    def __init__(self, dia, horario, local):
+        self.dia = dia
+        self.horario = horario
+        self.local = local
+
+    def __lt__(self, other):
+        if self.dia == other.dia:
+            return self.horario < other.horario
+        return Aula.DIAS.index(self.dia) < Aula.DIAS.index(other.dia)
+
+    def __repr__(self):
+        return '{} {} ({})'.format(self.dia, self.horario, self.local)
+
+
 class TurmaOfertada():
     def __init__(self, turma, descricao, vagas, turno, aulas,
                  professores, reserva='', observacoes=''):
@@ -17,14 +37,14 @@ class TurmaOfertada():
         self.descricao = descricao
         self.vagas = vagas
         self.turno = turno
-        self.aulas = aulas if isinstance(aulas, dict) else {aulas.dia: aulas}
+        self.aulas = aulas
         self.professores = professores
         self.reserva = reserva
         self.observacoes = observacoes
 
     def __repr__(self):
-        return '{} {}'.format(self.turma,
-                              ','.join(str(a) for a in self.aulas if a))
+        aulas = '\n\t\t'.join(str(aula) for aula in self.aulas)
+        return '{} ({} vagas)\n\t\t{}'.format(self.turma, self.vagas, aulas)
 
 
 class DisciplinaOfertada(utils.Disciplina):
@@ -34,8 +54,7 @@ class DisciplinaOfertada(utils.Disciplina):
         self.turmas = turmas
 
     def __repr__(self):
-        turmas = '\n\t'.join(t + ' ' + self.turmas[t]
-                             for t in sorted(self.turmas))
+        turmas = '\n\t'.join(str(self.turmas[t]) for t in sorted(self.turmas))
         return '{}\n\t{}'.format(super().__repr__(), turmas)
 
 
@@ -79,10 +98,7 @@ def listagem(arquivo):
     def parse_creditos(line):
         CREDITOS = r'(\d{3})  -   (\d{3})   -   (\d{3})  -   (\d{3})'
         m = re.search(CREDITOS, line)
-        return '{}:{}:{}:{}'.format(int(m.group(1)),
-                                    int(m.group(2)),
-                                    int(m.group(3)),
-                                    int(m.group(4)))
+        return utils.Creditos(m.group(1), m.group(2), m.group(3), m.group(4))
 
     def parse_disciplina(line):
         codigo, nome = line.split('  -  ')
@@ -163,7 +179,7 @@ def listagem(arquivo):
                 if len(line) > 36:
                     professor, reserva, obs = parse_Prof_Reserva_Obs(line[36:])
 
-        aula = {dia: {horario: local}} if dia else {}
+        aula = [Aula(dia, horario, local)] if dia else []
         return t, TurmaOfertada(t, descricao, vagas, turno, aula, professor,
                                 reserva, obs)
 
@@ -189,7 +205,7 @@ def listagem(arquivo):
                                                     parse_creditos(lines[i]),
                                                     [],
                                                     {})
-                print(oferta[codigo])
+
             # ### Pré-requisitos ###
             pre_reqs = ''
             while not lines[i].startswith('   Turma'):
@@ -220,21 +236,19 @@ def listagem(arquivo):
 
                     if info.descricao:
                         turmas[t].descricao += ' ' + info.descricao
-                    for dia in info.aulas:
-                        if dia in turmas[t].aulas:
-                            turmas[t].aulas[dia].update(info.aulas[dia])
-                        else:
-                            turmas[t].aulas.update(info.aulas)
+                    if info.aulas:
+                        turmas[t].aulas += info.aulas
+                        turmas[t].aulas.sort()
                     if info.professores:
                         if len(info.professores.split()) == 1:
                             # Supondo que haja um professor com nome muito
                             # longo, a última parte se estende em uma nova
-                            # linha
+                            # linha.
                             turmas[t].professores += ' ' + info.professores
                         else:
                             # É um nome composto de pelo menos duas partes,
-                            # supõe-se que seja de um novo professor
-                            turmas[t].professores += ', ' + info.professores
+                            # supõe-se que seja de um novo professor.
+                            turmas[t].professores += ',' + info.professores
                     if info.reserva:
                         turmas[t].reserva.update(info.reserva)
                     if info.observacoes:
@@ -242,10 +256,14 @@ def listagem(arquivo):
 
                     i += 1
 
-            if not oferta[codigo].turmas:
-                oferta[codigo].turmas = turmas
-            else:
+                turmas[t].professores = sorted([prof
+                                                for prof in turmas[
+                                                    t].professores.split(',')])
+
+            if oferta[codigo].turmas:
                 oferta[codigo].turmas.update(turmas)
+            else:
+                oferta[codigo].turmas = turmas
             # ### Turmas ###
 
     num_disciplinas = len(oferta)

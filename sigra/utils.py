@@ -8,39 +8,37 @@
 import re
 
 
+class Creditos():
+    def __init__(self, teoria, pratica, extensao, estudo):
+        self.teoria = int(teoria)
+        self.pratica = int(pratica)
+        self.extensao = int(extensao)
+        self.estudo = int(estudo)
+
+    def total(self, considera_estudo=False):
+        total = self.teoria + self.pratica + self.extensao
+        if considera_estudo:
+            total += self.estudo
+        return total
+
+    def __repr__(self):
+        return '{}:{}:{}:{}'.format(self.teoria, self.pratica,
+                                    self.extensao, self.estudo)
+
+
 class Disciplina():
     def __init__(self, depto, codigo, nome, creditos, pre_requisitos=[]):
         self.depto = depto
         self.codigo = codigo
         self.nome = nome
+        self.creditos = creditos
         self.pre_requisitos = pre_requisitos
-
-        quantidades = creditos.split(':')
-        self.__creditos = {'Teoria': int(quantidades[0]),
-                           'Prática': int(quantidades[1]),
-                           'Extensão': int(quantidades[2]),
-                           'Estudo': int(quantidades[3])}
 
     def __repr__(self):
         return '({}) {} - {} ({})'.format(self.depto,
                                           self.codigo,
                                           self.nome,
-                                          self.creditos_str())
-
-    def creditos(self, considera_estudo=False):
-        ''' Retorna a quantidade total de créditos de uma disciplina.'''
-        qtde = sum(v for v in self.__creditos.values())
-        if not considera_estudo:
-            qtde -= self.__creditos['Estudo']
-        return qtde
-
-    def creditos_str(self):
-        '''Retorna um string com a representação dos créditos de uma
-        disciplina.'''
-        return '{}:{}:{}:{}'.format(self.__creditos['Teoria'],
-                                    self.__creditos['Prática'],
-                                    self.__creditos['Extensão'],
-                                    self.__creditos['Estudo'])
+                                          str(self.creditos))
 
 
 def load(arquivo, encoding='utf-16'):

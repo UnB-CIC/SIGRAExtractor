@@ -24,11 +24,10 @@ def carga_horaria_ofertada(OFELST):
     for codigo, disciplina in oferta.items():
         for turma, detalhes in disciplina.turmas.items():
             if int(detalhes.vagas) > 0:
-                for professor in detalhes.professores.split(','):
-                    professor = professor.strip()
+                for professor in detalhes.professores:
                     if professor not in carga:
                         carga[professor] = 0
-                    carga[professor] += disciplina.creditos()
+                    carga[professor] += disciplina.creditos.total()
 
     return carga
 
@@ -67,19 +66,19 @@ def estatistica_por_semestre(HEEME,
                             disciplinas[codigo]['Turmas'][turma] == 0):
                         continue
 
-                    num_cred = oferta[codigo].creditos()
+                    num_cred = oferta[codigo].creditos.total()
 
                     if turma in oferta[codigo].turmas:
                         num_alunos = disciplinas[codigo]['Turmas'][turma]
-                        professores = oferta[codigo].turmas[
-                            turma].professores.split(',')
-                        for p in professores:
+                        num_professores = len(oferta[codigo].turmas[
+                                              turma].professores)
+                        for p in oferta[codigo].turmas[turma].professores:
                             if p not in docentes:
                                 docentes[p] = {'creditos': 0,
                                                'turmas': 0,
                                                'alunos': 0}
                             docentes[p]['creditos'] += (num_cred /
-                                                        len(professores))
+                                                        num_professores)
                             docentes[p]['turmas'] += 1
                             docentes[p]['alunos'] += num_alunos
         estatisticas[periodo] = docentes
@@ -104,8 +103,9 @@ def turmas_ofertadas(professores,
         for turma, detalhes in disciplina.turmas.items():
             if professores:
                 current_professores = [p for p in professores
-                                       if p.lower() in
-                                       detalhes.professores.lower()]
+                                       if p.lower() in (prof.lower()
+                                                        for prof in
+                                                        detalhes.professores)]
             else:
                 current_professores = detalhes.professores
 

@@ -46,10 +46,6 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
                    'ML', etc.
                    (default [])
     '''
-    DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-    HORARIOS = ['{:02d}:00 {:02d}:50'.format(h, h + 1)
-                for h in range(8, 19, 2)]
-
     oferta = pl_oferta.listagem(OFELST)
 
     fluxo = pl_fluxo.listagem(FLULST)
@@ -62,11 +58,11 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
         print('\n\nPeríodo: ', p)
         print('===========')
 
-        table_data = [[''] + DIAS]
-        for h in HORARIOS:
+        table_data = [[''] + pl_oferta.Aula.DIAS]
+        for h in pl_oferta.Aula.HORARIOS:
             linha = [h]
 
-            for dia in DIAS:
+            for dia in pl_oferta.Aula.DIAS:
                 aulas_do_dia = []
                 for disciplinas in fluxo[p].disciplinas.values():
                     for codigo in disciplinas:
@@ -79,8 +75,10 @@ def grade(OFELST, FLULST, habilitacao='', filtro_tipo=[]):
 
                         for t in sorted(turmas):
                             turma = oferta[codigo].turmas[t]
-                            if dia in turma.aulas and h in turma.aulas[dia]:
-                                aulas_do_dia.append(codigo + ' ' + t)
+                            for aula in turma.aulas:
+                                if (dia == aula.dia and
+                                        h[:2] == aula.horario[:2]):
+                                    aulas_do_dia.append(codigo + ' ' + t)
 
                 linha.append(' '.join(a for a in aulas_do_dia))
             table_data.append(linha)
@@ -121,8 +119,6 @@ def oferta_obrigatorias(OFELST,
         if 'OPT' in periodo.disciplinas:
             del periodo.disciplinas['OPT']
 
-    DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-
     for p in sorted(fluxo):
         print('\n\nPeríodo: ', p)
         print('===========')
@@ -138,11 +134,11 @@ def oferta_obrigatorias(OFELST,
                 reservas = []
                 for t in turmas:
                     turma = oferta[codigo].turmas[t]
-                    for dia in DIAS:
-                        if dia in turma.aulas:
-                            for h in sorted(turma.aulas[dia]):
+                    for dia in pl_oferta.Aula.DIAS:
+                        for aula in turma.aulas:
+                            if dia == aula.dia:
                                 reservas.append('\t\t{} {} {}'.format(
-                                                t, dia, h))
+                                                t, dia, aula.horario))
                 if habilitacao and reservas:
                     print('\tReserva')
                     print('\n'.join(reservas))
@@ -153,7 +149,7 @@ def oferta_obrigatorias(OFELST,
                     for t in sorted(oferta[codigo].turmas):
                         if t not in turmas:
                             turma = oferta[codigo].turmas[t]
-                            for dia in DIAS:
-                                if dia in turma.aulas:
-                                    for h in sorted(turma.aulas[dia]):
-                                        print('\t\t', t, dia, h)
+                            for dia in pl_oferta.Aula.DIAS:
+                                for aula in turma.aulas:
+                                    if dia == aula.dia:
+                                        print('\t\t', t, dia, aula.horario)
